@@ -1,48 +1,82 @@
-from abc import ABC, abstractmethod
+import json
 
-# A cleaner approach would be to define our own set of errors and have them map
-# to falcon HTTP errors, but I'm not convinced that that would be worth it here.
-from falcon import HTTP_200
+import falcon
+
+from .translators import DummyTranslator
 
 
-class Handler(ABC):
-    @abstractmethod
-    def handle_request(self, conversation_id, auth, page):
-        pass
+# TODO proper config file? enum?
+SERVICES = ['dummy']
+
 
 """
-Mock handler just to test that the rest of the code works elsewhere
+Manages all incoming HTTP requests for conversations, invoking the
+appropriate translator service.
 """
-class DummyHandler(Handler):
+class ConversationsHandler(object):
 
-    def handle_request(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200}
+    def __init__(self):
+        self.dummy_translator = DummyTranslator()
 
-        # The Java Programmer in me would like to see a result datatype to
-        # enforce the data is passed around in a consistent format. Does this
-        # seem reasonable?
-        result['data'] = {
-            'id': conversation_id,
-            'name': 'IW Chat Group',
-            'messages': [
-                {
-                    'msgId': 6789,
-                    'userId': 12345,
-                    'userName': 'Perry',
-                    'text': 'Hello, World!',
-                    'attachments': [],
-                    'time': 1521030283,
-                },
-                {
-                    'msgId': 6790,
-                    'userId': 32123,
-                    'userName': 'Jérémie',
-                    'text': 'Good to see you!',
-                    'attachments': [],
-                    'time': 1521030294,
-                },
-            ],
-            'next_page': 'somepagetoken1234'
-        }
 
-        return result
+    def on_get(self, req, resp, service, convo_id):
+        auth = req.get_param('token', default='')
+
+        ## Add other handlers here as they are created
+        if service == 'dummy':
+            result = self.dummy_translator.get_conversation(convo_id, auth)
+        else:
+            # No matching handler
+            raise falcon.HTTPBadRequest
+
+        resp.body = json.dumps(result['data'])
+        resp.status = result['status']
+
+
+"""
+Manages all incoming HTTP requests for users, invoking the appropriate
+translator service.
+"""
+class UsersHandler(object):
+
+    def __init__(self):
+        self.dummy_translator = DummyTranslator()
+
+
+    def on_get(self, req, resp, service, convo_id):
+        auth = req.get_param('token', default='')
+
+        ## Add other handlers here as they are created
+        if service == 'dummy':
+            result = self.dummy_translator.get_users(convo_id, auth)
+        else:
+            # No matching handler
+            raise falcon.HTTPBadRequest
+
+        resp.body = json.dumps(result['data'])
+        resp.status = result['status']
+
+
+"""
+Manages all incoming HTTP requests for users, invoking the appropriate
+translator service.
+"""
+class MessagesHandler(object):
+
+    def __init__(self):
+        self.dummy_translator = DummyTranslator()
+
+
+    def on_get(self, req, resp, service, convo_id):
+        auth = req.get_param('token', default='')
+        page = req.get_param('page', default='')
+
+        ## Add other handlers here as they are created
+        if service == 'dummy':
+            result = self.dummy_translator.get_messages(convo_id, auth, page)
+        else:
+            # No matching handler
+            raise falcon.HTTPBadRequest
+
+        resp.body = json.dumps(result['data'])
+        resp.status = result['status']
