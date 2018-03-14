@@ -1,8 +1,7 @@
 import falcon
 
-from .test import Resource
+from .conversations import ConversationsResource
 
 api = application = falcon.API()
 
-test = Resource()
-api.add_route('/test', test)
+api.add_route('/{service}/conversations/{convo_id}', ConversationsResource())
