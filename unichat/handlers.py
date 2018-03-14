@@ -1,13 +1,11 @@
-import json
-
 import falcon
 
+from .models import User, jsonify
 from .translators import DummyTranslator
 
 
 # TODO proper config file? enum?
 SERVICES = ['dummy']
-
 
 """
 Manages all incoming HTTP requests for conversations, invoking the
@@ -29,7 +27,7 @@ class ConversationsHandler(object):
             # No matching handler
             raise falcon.HTTPBadRequest
 
-        resp.body = json.dumps(result['data'])
+        resp.body = jsonify(result['data'])
         resp.status = result['status']
 
 
@@ -53,7 +51,7 @@ class UsersHandler(object):
             # No matching handler
             raise falcon.HTTPBadRequest
 
-        resp.body = json.dumps(result['data'])
+        resp.body = jsonify(result['data'])
         resp.status = result['status']
 
 
@@ -78,5 +76,5 @@ class MessagesHandler(object):
             # No matching handler
             raise falcon.HTTPBadRequest
 
-        resp.body = json.dumps(result['data'])
+        resp.body = jsonify(result['data'])
         resp.status = result['status']

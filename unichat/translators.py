@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 # to falcon HTTP errors, but I'm not convinced that that would be worth it here.
 from falcon import HTTP_200
 
+from .models import User, Conversation, Message, MessageCollection
+
 """
 Handles outgoing requests to a particular service. Accepts given parameters,
 makes whatever request(s) is necessary to the corresponding service, and returns
@@ -26,16 +28,8 @@ class DummyTranslator(Translator):
         # The Java Programmer in me would like to see a result datatype to
         # enforce the data is passed around in a consistent format. Does that
         # seem reasonable?
-        result['data'] = [
-            {
-            'id': 12345,
-            'name': 'IW Chat Group'
-            },
-            {
-            'id': 32123,
-            'name': 'IW Chat Group'
-            }
-        ]
+        result['data'] = [User(uid=12345,name="Perry"),
+                          User(uid=32123,name="Jérémie")]
 
         return result
 
@@ -46,29 +40,27 @@ class DummyTranslator(Translator):
         # The Java Programmer in me would like to see a result datatype to
         # enforce the data is passed around in a consistent format. Does that
         # seem reasonable?
-        result['data'] = {
-            'id': conversation_id,
-            'name': 'IW Chat Group',
-            'messages': [
-                {
-                    'msgId': 6789,
-                    'userId': 12345,
-                    'userName': 'Perry',
-                    'text': 'Hello, World!',
-                    'attachments': [],
-                    'time': 1521030283,
-                },
-                {
-                    'msgId': 6790,
-                    'userId': 32123,
-                    'userName': 'Jérémie',
-                    'text': 'Good to see you!',
-                    'attachments': [],
-                    'time': 1521030294,
-                },
-            ],
-            'next_page': 'somepagetoken1234'
-        }
+        result['data'] = Conversation(
+                cid=conversation_id,
+                name='IW Chat Group',
+                messages=[
+                    Message(
+                        mid=5789,
+                        uid=12345,
+                        user_name='Perry',
+                        text='Hello, World!',
+                        time=1521030283
+                    ),
+                    Message(
+                        mid=6790,
+                        uid=32123,
+                        user_name='Jérémie',
+                        text='Good to see you!',
+                        time=1521030283,
+                    )
+                ],
+                next_page='somepagetoken1234'
+            )
 
         return result
 
@@ -79,26 +71,24 @@ class DummyTranslator(Translator):
         # The Java Programmer in me would like to see a result datatype to
         # enforce the data is passed around in a consistent format. Does that
         # seem reasonable?
-        result['data'] = {
-            'messages': [
-                {
-                    'msgId': 6789,
-                    'userId': 12345,
-                    'userName': 'Perry',
-                    'text': 'Hello, World!',
-                    'attachments': [],
-                    'time': 1521030283,
-                },
-                {
-                    'msgId': 6790,
-                    'userId': 32123,
-                    'userName': 'Jérémie',
-                    'text': 'Good to see you!',
-                    'attachments': [],
-                    'time': 1521030294,
-                },
-            ],
-            'next_page': 'somepagetoken1234'
-        }
+        result['data'] = MessageCollection(
+                messages=[
+                    Message(
+                        mid=5789,
+                        uid=12345,
+                        user_name='Perry',
+                        text='Hello, World!',
+                        time=1521030283
+                    ),
+                    Message(
+                        mid=6790,
+                        uid=32123,
+                        user_name='Jérémie',
+                        text='Good to see you!',
+                        time=1521030283,
+                    )
+                ],
+                next_page='somepagetoken1234'
+            )
 
         return result
