@@ -25,9 +25,6 @@ class DummyTranslator(Translator):
     def get_users(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200}
 
-        # The Java Programmer in me would like to see a result datatype to
-        # enforce the data is passed around in a consistent format. Does that
-        # seem reasonable?
         result['data'] = [User(uid=12345,name="Perry"),
                           User(uid=32123,name="Jérémie")]
 
@@ -37,9 +34,6 @@ class DummyTranslator(Translator):
     def get_conversation(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200}
 
-        # The Java Programmer in me would like to see a result datatype to
-        # enforce the data is passed around in a consistent format. Does that
-        # seem reasonable?
         result['data'] = Conversation(
                 cid=conversation_id,
                 name='IW Chat Group',
@@ -68,9 +62,6 @@ class DummyTranslator(Translator):
     def get_messages(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200}
 
-        # The Java Programmer in me would like to see a result datatype to
-        # enforce the data is passed around in a consistent format. Does that
-        # seem reasonable?
         result['data'] = MessageCollection(
                 messages=[
                     Message(
