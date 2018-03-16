@@ -7,15 +7,15 @@
 
 ## Testing
 
+Note: Currently `make test` only runs a very basic test to see if the server
+returns an HTTP error for a valid request, with no other checks of any kind.
+
 In one terminal:
 
-    $ pipenv install # (If this is the first time)
-    $ pipenv shell
-    $ gunicorn --reload unichat.app
-
+    $ make install # (If this is the first time)
+    $ make serve
 
 In another:
 
-    $ pipenv shell
-    $ http localhost:8000/dummy/conversations/42?token=AUTH
+    $ make test
 
