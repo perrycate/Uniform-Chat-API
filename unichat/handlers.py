@@ -1,7 +1,7 @@
 import falcon
 
-from .models import User, jsonify
-from .translators import DummyTranslator
+from unichat.models import User, jsonify
+from unichat.translators import DummyTranslator
 
 
 # TODO proper config file? enum?

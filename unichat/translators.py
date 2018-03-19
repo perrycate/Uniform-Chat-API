@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 # to falcon HTTP errors, but I'm not convinced that that would be worth it here.
 from falcon import HTTP_200
 
-from .models import User, Conversation, Message, MessageCollection
+from unichat.models import User, Conversation, Message, MessageCollection
 
 """
 Handles outgoing requests to a particular service. Accepts given parameters,
