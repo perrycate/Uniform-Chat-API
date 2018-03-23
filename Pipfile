@@ -15,6 +15,7 @@ falcon = "*"
 ipython = "*"
 gunicorn = "*"
 httpie = "*"
+mypy = "*"
 
 
 [requires]
