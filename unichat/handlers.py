@@ -1,11 +1,10 @@
+from typing import Mapping
+
 import falcon
 
 from unichat.models import User, jsonify
-from unichat.translators import DummyTranslator
+from unichat.translators import Translator
 
-
-# TODO proper config file? enum?
-SERVICES = ['dummy']
 
 """
 Manages all incoming HTTP requests for conversations, invoking the
@@ -13,19 +12,18 @@ appropriate translator service.
 """
 class ConversationsHandler(object):
 
-    def __init__(self):
-        self.dummy_translator = DummyTranslator()
+    def __init__(self, translators: Mapping[str, Translator]) -> None:
+        self.translators = translators
 
 
     def on_get(self, req, resp, service, convo_id):
         auth = req.get_param('token', default='')
 
-        ## Add other handlers here as they are created
-        if service == 'dummy':
-            result = self.dummy_translator.get_conversation(convo_id, auth)
-        else:
-            # No matching handler
+        # Make sure request is for a valid service
+        if service not in self.translators:
             raise falcon.HTTPBadRequest
+
+        result = self.translators[service].get_conversation(convo_id, auth)
 
         resp.body = jsonify(result['data'])
         resp.status = result['status']
@@ -37,19 +35,18 @@ translator service.
 """
 class UsersHandler(object):
 
-    def __init__(self):
-        self.dummy_translator = DummyTranslator()
+    def __init__(self, translators: Mapping[str, Translator]) -> None:
+        self.translators = translators
 
 
     def on_get(self, req, resp, service, convo_id):
         auth = req.get_param('token', default='')
 
-        ## Add other handlers here as they are created
-        if service == 'dummy':
-            result = self.dummy_translator.get_users(convo_id, auth)
-        else:
-            # No matching handler
+        # Make sure request is for a valid service
+        if service not in self.translators:
             raise falcon.HTTPBadRequest
+
+        result = self.translators[service].get_users(convo_id, auth)
 
         resp.body = jsonify(result['data'])
         resp.status = result['status']
@@ -61,20 +58,19 @@ translator service.
 """
 class MessagesHandler(object):
 
-    def __init__(self):
-        self.dummy_translator = DummyTranslator()
+    def __init__(self, translators: Mapping[str, Translator]) -> None:
+        self.translators = translators
 
 
     def on_get(self, req, resp, service, convo_id):
         auth = req.get_param('token', default='')
         page = req.get_param('page', default='')
 
-        ## Add other handlers here as they are created
-        if service == 'dummy':
-            result = self.dummy_translator.get_messages(convo_id, auth, page)
-        else:
-            # No matching handler
+        # Make sure request is for a valid service
+        if service not in self.translators:
             raise falcon.HTTPBadRequest
+
+        result = self.translators[service].get_messages(convo_id, auth, page)
 
         resp.body = jsonify(result['data'])
         resp.status = result['status']
