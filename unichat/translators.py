@@ -12,9 +12,19 @@ makes whatever request(s) is necessary to the corresponding service, and returns
 data in a uniform format.
 """
 class Translator(ABC):
+
+    @abstractmethod
+    def get_users(self, conversation_id, auth, page):
+        pass
+
     @abstractmethod
     def get_conversation(self, conversation_id, auth, page):
         pass
+
+    @abstractmethod
+    def get_messages(self, conversation_id, auth, page):
+        pass
+
 
 """
 Mock handler just to test that the rest of the code works elsewhere
