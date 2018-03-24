@@ -1,11 +1,12 @@
 import falcon
 
 from unichat.handlers import ConversationsHandler, UsersHandler, MessagesHandler
-from unichat.translators import DummyTranslator
+from unichat.translators import DummyTranslator, GroupMeTranslator
 
 
 translator_map = {
-    'dummy': DummyTranslator()
+    'dummy': DummyTranslator(),
+    'groupme': GroupMeTranslator(),
 }
 
 api = application = falcon.API()

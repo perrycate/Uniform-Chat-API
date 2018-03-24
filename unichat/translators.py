@@ -1,3 +1,5 @@
+import json
+import urllib.request
 from abc import ABC, abstractmethod
 
 # A cleaner approach would be to define our own set of errors and have them map
@@ -93,3 +95,51 @@ class DummyTranslator(Translator):
             )
 
         return result
+
+
+"""
+Handles requests against GroupMe's public API.
+"""
+class GroupMeTranslator(Translator):
+
+    url_base = 'https://api.groupme.com/v3'
+
+    def get_users(self, conversation_id, auth='', page=''):
+        # In groupme's API, members are embedded in the data for that specific
+        # group
+        group_data = make_request(GroupMeTranslator.url_base,
+                                  '/groups/{}'.format(conversation_id),
+                                  auth)
+        members = []
+        for m in group_data['members']:
+            members.append(User(uid=m['id'], name=m['nickname']))
+
+        result = {'data':members, 'status': '200'}
+        return result
+
+
+    def get_conversation(self, conversation_id, auth='', page=''):
+        pass
+
+    def get_messages(self, conversation_id, auth='', page=''):
+        pass
+
+
+# fetches resource at URL, converts JSON response to useful Object
+def make_request(base_url, additional_url, token, params={}):
+    # Note: This function may require modification to be more generally useful.
+    # I am borrowing it from another project specifically designed to work with
+    # groupme's API (but not others)
+
+    url = base_url + additional_url + "?token=" + token
+    for param, value in params.items():
+        url += "&" + param + "=" + value
+
+    response = urllib.request.urlopen(url)
+
+    # Convert raw response to usable JSON object
+    response_as_string = response.read().decode('utf-8')
+    obj = json.loads(response_as_string)
+
+    return obj["response"]
+
