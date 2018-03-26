@@ -44,12 +44,10 @@ class Dummy(Translator):
         result['data'] = [
             Conversation(
                 cid='4d7123',
-                name='IW Chat Group',
-                next_page='somepagetoken1234'),
+                name='IW Chat Group'),
             Conversation(
                 cid='9d2asdf',
-                name='Some other Group',
-                next_page='somepagetoken56789'),
+                name='Some other Group'),
         ]
 
         return result
@@ -103,7 +101,7 @@ class Dummy(Translator):
 
 
 """
-Handles requests against GroupMe's public API.
+Translates incoming requests into proper queries against GroupMe's public API.
 """
 class GroupMe(Translator):
 
@@ -122,8 +120,7 @@ class GroupMe(Translator):
 
             # Add other user
             dm_data = make_request(GroupMe.url_base,
-                                   '/direct_messages/{}'.format(cid),
-                                   auth)
+                                   '/direct_messages/{}'.format(cid), auth)
             members.append(User(uid=dm_data['direct_messages']['user_id'],
                             name=dm_data['direct_messages']['name']))
 
@@ -134,8 +131,7 @@ class GroupMe(Translator):
             # Expected conversation id: G + group ID
             gid = cls._convert_id(conversation_id)
             data = make_request(GroupMe.url_base,
-                                '/groups/{}'.format(gid),
-                                auth)
+                                '/groups/{}'.format(gid), auth)
             for m in data['members']:
                 members.append(User(uid=m['id'], name=m['nickname']))
 
@@ -164,10 +160,8 @@ class GroupMe(Translator):
                                    auth)
             result['data'] = Conversation(
                     # TODO NEXT
-                    # Reminder: change DM conversation ID to [G|D] + other user ID
                     cid='',
                     name='',
-                    next_page=''
                 )
 
             # Add ourselves

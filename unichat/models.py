@@ -1,6 +1,7 @@
 import json
 
 def jsonify(model):
+
     if isinstance(model, list):
         rendered = [x.render() for x in model]
     else:
@@ -10,6 +11,7 @@ def jsonify(model):
 
 
 class User(object):
+
     def __init__(self,uid, name):
         self.uid = uid
         self.name = name
@@ -20,20 +22,35 @@ class User(object):
             'name': self.name
         }
 
+
 class Conversation(object):
-    def __init__(self, cid, name, next_page):
+
+    def __init__(self, cid, name):
         self.cid = cid
         self.name = name
-        self.next_page = next_page
 
     def render(self):
         return {
             'id': self.cid,
             'name': self.name,
+        }
+
+
+class ConversationCollection(object):
+
+    def __init__(self, conversations, next_page):
+        self.conversations = conversations
+        self.next_page = next_page
+
+    def render(self):
+        return {
+            'conversations': [c.render() for c in self.conversations],
             'nextPage': self.next_page
         }
 
+
 class Message(object):
+
     def __init__(self, mid, uid, user_name, text, time, attachments=[]):
         self.mid = mid
         self.uid = uid
@@ -51,6 +68,7 @@ class Message(object):
             'attachments': [], #TODO Implement attachments
             'time': self.time
         }
+
 
 class MessageCollection(object):
     def __init__(self, messages, next_page):
