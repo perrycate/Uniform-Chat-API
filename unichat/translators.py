@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 # to falcon HTTP errors
 from falcon import HTTP_200
 
-from unichat.models import User, Conversation, Message, MessageCollection
+from unichat.models import User, Conversation, ConversationCollection, \
+                                Message, MessageCollection
 
 """
 Handles outgoing requests to a particular service. Accepts given parameters,
@@ -41,14 +42,10 @@ class Dummy(Translator):
     def get_conversations_list(self, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200}
 
-        result['data'] = [
-            Conversation(
-                cid='4d7123',
-                name='IW Chat Group'),
-            Conversation(
-                cid='9d2asdf',
-                name='Some other Group'),
-        ]
+        result['data'] = ConversationCollection(
+                [Conversation(cid='4d7123', name='IW Chat Group'),
+                 Conversation(cid='9d2asdf', name='Some other Group')],
+                next_page='somepagetoken4321')
 
         return result
 
@@ -67,8 +64,7 @@ class Dummy(Translator):
 
         result['data'] = Conversation(
                 cid=conversation_id,
-                name='IW Chat Group',
-                next_page='somepagetoken1234'
+                name='IW Chat Group'
             )
 
         return result
