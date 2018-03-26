@@ -10,6 +10,8 @@
 Note: Currently `make test` only runs a very basic test to see if the server
 returns an HTTP error for a valid request, with no other checks of any kind.
 
+Prerequisites: User must have Python 3, pip, and pipenv installed
+
 In one terminal:
 
     $ make install # (If this is the first time)
