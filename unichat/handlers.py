@@ -10,7 +10,7 @@ from unichat.translators import Translator
 Manages incoming HTTP requests to discover conversations, invoking the
 appropriate translator service.
 """
-class ConversationsListHandler(object):
+class ConversationsList(object):
 
     def __init__(self, translators: Mapping[str, Translator]) -> None:
         self.translators = translators
@@ -33,7 +33,7 @@ class ConversationsListHandler(object):
 Manages incoming HTTP requests for data on a specific conversation, invoking
 the appropriate translator service.
 """
-class ConversationHandler(object):
+class Conversation(object):
 
     def __init__(self, translators: Mapping[str, Translator]) -> None:
         self.translators = translators
@@ -56,7 +56,7 @@ class ConversationHandler(object):
 Manages all incoming HTTP requests for users, invoking the appropriate
 translator service.
 """
-class UsersHandler(object):
+class Users(object):
 
     def __init__(self, translators: Mapping[str, Translator]) -> None:
         self.translators = translators
@@ -79,7 +79,7 @@ class UsersHandler(object):
 Manages all incoming HTTP requests for users, invoking the appropriate
 translator service.
 """
-class MessagesHandler(object):
+class Messages(object):
 
     def __init__(self, translators: Mapping[str, Translator]) -> None:
         self.translators = translators

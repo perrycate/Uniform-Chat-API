@@ -35,7 +35,7 @@ class Translator(ABC):
 """
 Mock handler just to test that the rest of the code works elsewhere
 """
-class DummyTranslator(Translator):
+class Dummy(Translator):
 
 
     def get_conversations_list(self, auth='', page=''):
@@ -105,7 +105,7 @@ class DummyTranslator(Translator):
 """
 Handles requests against GroupMe's public API.
 """
-class GroupMeTranslator(Translator):
+class GroupMe(Translator):
 
     url_base = 'https://api.groupme.com/v3'
 
@@ -115,7 +115,7 @@ class GroupMeTranslator(Translator):
 
         # TODO NEXT examine conversation id to see if we need to hit /groups or
         # /chats
-        group_data = make_request(GroupMeTranslator.url_base,
+        group_data = make_request(GroupMe.url_base,
                                   '/groups/{}'.format(conversation_id),
                                   auth)
         members = []
@@ -129,7 +129,7 @@ class GroupMeTranslator(Translator):
         pass
 
     def get_conversation(self, conversation_id, auth='', page=''):
-        group_data = make_request(GroupMeTranslator.url_base,
+        group_data = make_request(GroupMe.url_base,
                                   '/groups/{}'.format(conversation_id),
                                   auth)
         result = {'data': {}, 'status': HTTP_200} # TODO error handling

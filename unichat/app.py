@@ -1,20 +1,20 @@
 import falcon
 
-from unichat.handlers import ConversationsListHandler, ConversationHandler, UsersHandler, MessagesHandler
-from unichat.translators import DummyTranslator, GroupMeTranslator
+from unichat.handlers import ConversationsList, Conversation, Users, Messages
+from unichat.translators import Dummy, GroupMe
 
 
 translator_map = {
-    'dummy': DummyTranslator(),
-    'groupme': GroupMeTranslator(),
+    'dummy': Dummy(),
+    'groupme': GroupMe(),
 }
 
 api = application = falcon.API()
 api.add_route('/{service}/conversations',
-              ConversationsListHandler(translator_map))
+              ConversationsList(translator_map))
 api.add_route('/{service}/conversations/{convo_id}',
-              ConversationHandler(translator_map))
+              Conversation(translator_map))
 api.add_route('/{service}/conversations/{convo_id}/users',
-              UsersHandler(translator_map))
+              Users(translator_map))
 api.add_route('/{service}/conversations/{convo_id}/messages',
-              MessagesHandler(translator_map))
+              Messages(translator_map))
