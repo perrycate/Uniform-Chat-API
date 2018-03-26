@@ -21,17 +21,15 @@ class User(object):
         }
 
 class Conversation(object):
-    def __init__(self, cid, name, messages, next_page):
+    def __init__(self, cid, name, next_page):
         self.cid = cid
         self.name = name
-        self.messages = messages
         self.next_page = next_page
 
     def render(self):
         return {
             'id': self.cid,
             'name': self.name,
-            'messages': [m.render() for m in self.messages],
             'nextPage': self.next_page
         }
 

@@ -7,10 +7,33 @@ from unichat.translators import Translator
 
 
 """
-Manages all incoming HTTP requests for conversations, invoking the
+Manages incoming HTTP requests to discover conversations, invoking the
 appropriate translator service.
 """
-class ConversationsHandler(object):
+class ConversationsListHandler(object):
+
+    def __init__(self, translators: Mapping[str, Translator]) -> None:
+        self.translators = translators
+
+
+    def on_get(self, req, resp, service, convo_id):
+        auth = req.get_param('token', default='')
+
+        # Make sure request is for a valid service
+        if service not in self.translators:
+            raise falcon.HTTPBadRequest
+
+        result = self.translators[service].get_conversations(convo_id, auth)
+
+        resp.body = jsonify(result['data'])
+        resp.status = result['status']
+
+
+"""
+Manages incoming HTTP requests for data on a specific conversation, invoking
+the appropriate translator service.
+"""
+class ConversationHandler(object):
 
     def __init__(self, translators: Mapping[str, Translator]) -> None:
         self.translators = translators
