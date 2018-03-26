@@ -3,7 +3,7 @@ import urllib.request
 from abc import ABC, abstractmethod
 
 # A cleaner approach would be to define our own set of errors and have them map
-# to falcon HTTP errors, but I'm not convinced that that would be worth it here.
+# to falcon HTTP errors
 from falcon import HTTP_200
 
 from unichat.models import User, Conversation, Message, MessageCollection
@@ -108,36 +108,77 @@ Handles requests against GroupMe's public API.
 class GroupMe(Translator):
 
     url_base = 'https://api.groupme.com/v3'
+    DM_ID_PREFIX = 'D'
+    GROUP_ID_PREFIX = 'G'
+    assert len(DM_ID_PREFIX) == len(GROUP_ID_PREFIX)
+    ID_PREFIX_LENGTH = len(DM_ID_PREFIX)
 
     def get_users(self, conversation_id, auth='', page=''):
-        # In groupme's API, members are embedded in the data for that specific
-        # group, so we just get the group data and examine the members.
 
-        # TODO NEXT examine conversation id to see if we need to hit /groups or
-        # /chats
-        group_data = make_request(GroupMe.url_base,
-                                  '/groups/{}'.format(conversation_id),
-                                  auth)
         members = []
-        for m in group_data['members']:
-            members.append(User(uid=m['id'], name=m['nickname']))
+        if cls._is_direct_message(conversation_id):
+            # Expected conversation id: D + other user ID
+            cid = cls._convert_id(conversation_id)
 
-        result = {'data':members, 'status': '200'}
-        return result
+            # Add other user
+            dm_data = make_request(GroupMe.url_base,
+                                   '/direct_messages/{}'.format(cid),
+                                   auth)
+            members.append(User(uid=dm_data['direct_messages']['user_id'],
+                            name=dm_data['direct_messages']['name']))
+
+            # Add ourselves
+            self_data = make_request(GroupMe.url_base, '/users/me', auth)
+            members.append(User(uid=self_data['id'], name=self_data['name']))
+        else:
+            # Expected conversation id: G + group ID
+            gid = cls._convert_id(conversation_id)
+            data = make_request(GroupMe.url_base,
+                                '/groups/{}'.format(gid),
+                                auth)
+            for m in data['members']:
+                members.append(User(uid=m['id'], name=m['nickname']))
+
+        return {'data':members, 'status': '200'} # TODO error handling
 
     def get_conversations_list(self, auth='', page=''):
-        pass
-
-    def get_conversation(self, conversation_id, auth='', page=''):
-        group_data = make_request(GroupMe.url_base,
-                                  '/groups/{}'.format(conversation_id),
-                                  auth)
-        result = {'data': {}, 'status': HTTP_200} # TODO error handling
+        # Reminder: change DM conversation ID to [G|D] + other user ID
 
         # TODO hit /chats (possibly multiple times?), mix with groups, sort,
         # return top 100? idk but make sure it's pageable
 
-        result['data'] = Conversation(
+        # IDEA: in page token: indexes (page and offset) into both groups and DMs 
+
+        pass
+
+    def get_conversation(self, conversation_id, auth='', page=''):
+        result = {'data': {}, 'status': HTTP_200} # TODO error handling
+
+        if cls._is_direct_message(conversation_id):
+            # Expected conversation id: D + other user ID
+            cid = cls._convert_id(conversation_id)
+
+            # Add other user
+            dm_data = make_request(GroupMe.url_base,
+                                   '/direct_messages/{}'.format(cid),
+                                   auth)
+            result['data'] = Conversation(
+                    # TODO NEXT
+                    # Reminder: change DM conversation ID to [G|D] + other user ID
+                    cid='',
+                    name='',
+                    next_page=''
+                )
+
+            # Add ourselves
+            self_data = make_request(GroupMe.url_base, '/users/me', auth)
+            members.append(User(uid=self_data['id'], name=self_data['name']))
+        else:
+
+            group_data = make_request(GroupMe.url_base,
+                                      '/groups/{}'.format(conversation_id),
+                                      auth)
+            result['data'] = Conversation(
                 cid=group_data['id'],
                 name=group_data['name'],
                 next_page='somepagetoken1234'
@@ -146,6 +187,14 @@ class GroupMe(Translator):
 
     def get_messages(self, conversation_id, auth='', page=''):
         pass
+
+    def _is_direct_message(cls, conversation_id: str) -> bool:
+        return conversation_id.startswith(cls.DM_ID_PREFIX)
+
+    def _convert_id(cls, conversation_id: str) -> str:
+        # Convert client-facing conversation_id into the format groupme expects
+        return conversation_id[cls.ID_PREFIX_LENGTH:]
+
 
 
 # fetches resource at URL, converts JSON response to useful Object
