@@ -110,9 +110,9 @@ class GroupMe(Translator):
     def get_users(self, conversation_id, auth='', page=''):
 
         members = []
-        if cls._is_direct_message(conversation_id):
+        if self._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
-            cid = cls._convert_id(conversation_id)
+            cid = cls._convo_to_groupme_id(conversation_id)
 
             # Add other user
             dm_data = make_request(GroupMe.url_base,
@@ -125,7 +125,7 @@ class GroupMe(Translator):
             members.append(User(uid=self_data['id'], name=self_data['name']))
         else:
             # Expected conversation id: G + group ID
-            gid = cls._convert_id(conversation_id)
+            gid = cls._convo_to_groupme_id(conversation_id)
             data = make_request(GroupMe.url_base,
                                 '/groups/{}'.format(gid), auth)
             for m in data['members']:
@@ -146,34 +146,28 @@ class GroupMe(Translator):
     def get_conversation(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200} # TODO error handling
 
-        if cls._is_direct_message(conversation_id):
+        if self._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
-            cid = cls._convert_id(conversation_id)
+            other_user_id = self._convo_to_groupme_id(conversation_id)
 
             # Add other user
-            dm_data = make_request(GroupMe.url_base,
-                                   '/direct_messages/{}'.format(cid),
-                                   auth)
-            result['data'] = Conversation(
-                    # TODO NEXT
-                    cid='',
-                    name='',
-                )
+            dm_data = make_request(GroupMe.url_base, '/direct_messages',
+                                   auth, {'other_user_id': other_user_id})
 
-            # Add ourselves
-            self_data = make_request(GroupMe.url_base, '/users/me', auth)
-            members.append(User(uid=self_data['id'], name=self_data['name']))
+            # False only if there's a code error, _not_ user error
+            assert other_user_id == dm_data['direct_messages']['recipient_id']
+
+            result['data'] = Conversation(
+                    cid=self._dm_to_convo_id(other_user_id),
+                    name=dm_data['direct_messages']['name'])
         else:
 
             group_data = make_request(GroupMe.url_base,
                                       '/groups/{}'.format(conversation_id),
                                       auth)
             result['data'] = Conversation(
-                cid=group_data['id'],
-                name=group_data['name'],
-                next_page='somepagetoken1234'
-            )
-
+                    cid=group_data['id'],
+                    name=group_data['name'])
 
     def get_messages(self, conversation_id, auth='', page=''):
         pass
@@ -181,17 +175,21 @@ class GroupMe(Translator):
     def _is_direct_message(cls, conversation_id: str) -> bool:
         return conversation_id.startswith(cls.DM_ID_PREFIX)
 
-    def _convert_id(cls, conversation_id: str) -> str:
+    def _convo_to_groupme_id(cls, conversation_id: str) -> str:
         # Convert client-facing conversation_id into the format groupme expects
         return conversation_id[cls.ID_PREFIX_LENGTH:]
 
+    def _dm_to_convo_id(cls, other_user_id: str) -> str:
+        # NOTE: Because of how groupme retrieves direct messages, we use the
+        # ID of the other user, not the 'id' property of direct messages
+        return cls.DM_ID_PREFIX + other_user_id
 
 
 # fetches resource at URL, converts JSON response to useful Object
 def make_request(base_url, additional_url, token, params={}):
     # Note: This function may require modification to be more generally useful.
     # I am borrowing it from another project specifically designed to work with
-    # groupme's API (but not others)
+    # groupme's API
 
     url = base_url + additional_url + "?token=" + token
     for param, value in params.items():
