@@ -112,7 +112,7 @@ class GroupMe(Translator):
         members = []
         if self._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
-            cid = cls._convo_to_groupme_id(conversation_id)
+            cid = self._convo_to_groupme_id(conversation_id)
 
             # Add other user
             dm_data = make_request(GroupMe.url_base,
@@ -125,7 +125,7 @@ class GroupMe(Translator):
             members.append(User(uid=self_data['id'], name=self_data['name']))
         else:
             # Expected conversation id: G + group ID
-            gid = cls._convo_to_groupme_id(conversation_id)
+            gid = self._convo_to_groupme_id(conversation_id)
             data = make_request(GroupMe.url_base,
                                 '/groups/{}'.format(gid), auth)
             for m in data['members']:
@@ -161,13 +161,14 @@ class GroupMe(Translator):
                     cid=self._dm_to_convo_id(other_user_id),
                     name=dm_data['direct_messages']['name'])
         else:
-
+            gid = self._convo_to_groupme_id(conversation_id)
             group_data = make_request(GroupMe.url_base,
-                                      '/groups/{}'.format(conversation_id),
-                                      auth)
+                                      '/groups/{}'.format(gid), auth)
             result['data'] = Conversation(
                     cid=group_data['id'],
                     name=group_data['name'])
+
+        return result
 
     def get_messages(self, conversation_id, auth='', page=''):
         pass
