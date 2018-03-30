@@ -18,13 +18,16 @@ class ConversationsList(object):
 
     def on_get(self, req, resp, service):
         auth = req.get_param('token', default='')
+        page = req.get_param('page', default='1:0-1:0')
 
         # Make sure request is for a valid service
         if service not in self.translators:
             raise falcon.HTTPBadRequest
 
-        result = self.translators[service].get_conversations_list(auth)
+        result = self.translators[service].get_conversations_list(auth, page)
 
+        print(len(result['data'].conversations))
+        import pdb; pdb.set_trace()
         resp.body = jsonify(result['data'])
         resp.status = result['status']
 

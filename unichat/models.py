@@ -25,14 +25,16 @@ class User(object):
 
 class Conversation(object):
 
-    def __init__(self, cid, name):
+    def __init__(self, cid, name, last_updated):
         self.cid = cid
         self.name = name
+        self.last_updated = last_updated
 
     def render(self):
         return {
             'id': self.cid,
             'name': self.name,
+            'last_updated': self.last_updated,
         }
 
 

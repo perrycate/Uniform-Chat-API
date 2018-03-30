@@ -43,8 +43,10 @@ class Dummy(Translator):
         result = {'data': {}, 'status': HTTP_200}
 
         result['data'] = ConversationCollection(
-                [Conversation(cid='4d7123', name='IW Chat Group'),
-                 Conversation(cid='9d2asdf', name='Some other Group')],
+                [Conversation(cid='4d7123', name='IW Chat Group',
+                              last_updated=123456789),
+                 Conversation(cid='9d2asdf', name='Some other Group',
+                              last_updated=123456799)],
                 next_page='somepagetoken4321')
 
         return result
@@ -64,7 +66,8 @@ class Dummy(Translator):
 
         result['data'] = Conversation(
                 cid=conversation_id,
-                name='IW Chat Group'
+                name='IW Chat Group',
+                last_updated=123456788
             )
 
         return result
@@ -102,6 +105,8 @@ Translates incoming requests into proper queries against GroupMe's public API.
 class GroupMe(Translator):
 
     url_base = 'https://api.groupme.com/v3'
+    DMS_PER_PAGE = 100
+    GROUPS_PER_PAGE = 100
     DM_ID_PREFIX = 'D'
     GROUP_ID_PREFIX = 'G'
     assert len(DM_ID_PREFIX) == len(GROUP_ID_PREFIX)
@@ -133,15 +138,87 @@ class GroupMe(Translator):
 
         return {'data':members, 'status': '200'} # TODO error handling
 
-    def get_conversations_list(self, auth='', page=''):
-        # Reminder: change DM conversation ID to [G|D] + other user ID
+    def get_conversations_list(self, auth='', page='1:0-1:0'):
 
-        # TODO hit /chats (possibly multiple times?), mix with groups, sort,
-        # return top 100? idk but make sure it's pageable
+        # Page token format: '(DM Page):(DM Index)-(Groups Page):(Groups index)
+        dms, groups = page.split('-')
+        dms_page, dms_offset = [int(x) for x in dms.split(':')]
+        groups_page, groups_offset = [int(x) for x in groups.split(':')]
 
-        # IDEA: in page token: indexes (page and offset) into both groups and DMs 
+        # Retrieve direct messages, convert to Conversations
+        dms = []
+        dms_raw = make_request(
+            GroupMe.url_base, '/chats', auth,
+            {'page': dms_page, 'per_page': GroupMe.DMS_PER_PAGE}
+        )
+        i = 0
+        # Skip to offset
+        dms_raw = dms_raw[dms_offset:]
+        for dm in dms_raw:
+            dm_object = Conversation(
+                    cid=self._dm_to_convo_id(dm['other_user']['id']),
+                    name=dm['other_user']['name'],
+                    last_updated=float(dm['updated_at']))
+            dm_object.index = i # Ad-hoc property, determines new index later
+            dms.append(dm_object)
+            i += 1
 
-        pass
+        # Retrieve group messages, convert to Conversations
+        groups = []
+        groups_raw = make_request(
+            GroupMe.url_base, '/groups', auth,
+            {'page': groups_page, 'per_page': GroupMe.GROUPS_PER_PAGE}
+        )
+        i = 0
+        for group in groups_raw:
+            group_object = Conversation(
+                cid=self._group_to_convo_id(group['id']),
+                name=group['name'],
+                last_updated=float(group['updated_at']))
+            group_object.index = i # Ad-hoc property, determins new index later
+            groups.append(group_object)
+            i += 1
+
+        # Combine chats and groups, sort by updated_at
+        combined = sorted((dms + groups), key=lambda c: c.last_updated,
+                          reverse=True)
+
+        # Find new offsets
+        num_groups, num_dms = len(groups), len(dms)
+        groups_count, dms_count = 0, 0
+        for conversation in combined:
+            if self._is_direct_message(conversation.cid):
+                dms_count += 1
+                if dms_count == num_dms and num_dms != 0:
+                    break
+            else:
+                groups_count += 1
+                if groups_count == num_groups and num_groups != 0:
+                    break
+        assert dms_count <= GroupMe.GROUPS_PER_PAGE
+        assert groups_count <= GroupMe.GROUPS_PER_PAGE
+
+        # Trim data
+        combined = combined[:(dms_count + groups_count)]
+
+        # Increment offsets and pages
+        if (dms_offset + dms_count) % GroupMe.DMS_PER_PAGE == 0:
+            dms_offset = 0
+            dms_page += 1
+        else:
+            dms_offset += dms_count
+
+        if (groups_offset + groups_count) % GroupMe.GROUPS_PER_PAGE == 0:
+            groups_offset = 0
+            groups_page += 1
+        else:
+            groups_offset += groups_count
+
+        new_page_token = '{}:{}-{}:{}'.format(dms_page, dms_offset,
+                                              groups_page, groups_offset)
+
+        return {'data': ConversationCollection(combined, new_page_token),
+                'status': HTTP_200}
 
     def get_conversation(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200} # TODO error handling
@@ -159,14 +236,16 @@ class GroupMe(Translator):
 
             result['data'] = Conversation(
                     cid=self._dm_to_convo_id(other_user_id),
-                    name=dm_data['direct_messages']['name'])
+                    name=dm_data['direct_messages']['name'],
+                    last_updated=float(dm_data['direct_messages']['updated_at']))
         else:
             gid = self._convo_to_groupme_id(conversation_id)
             group_data = make_request(GroupMe.url_base,
                                       '/groups/{}'.format(gid), auth)
             result['data'] = Conversation(
                     cid=group_data['id'],
-                    name=group_data['name'])
+                    name=group_data['name'],
+                    last_updated=float(group_data['updated_at']))
 
         return result
 
@@ -178,13 +257,14 @@ class GroupMe(Translator):
 
     def _convo_to_groupme_id(cls, conversation_id: str) -> str:
         # Convert client-facing conversation_id into the format groupme expects
-        return conversation_id[cls.ID_PREFIX_LENGTH:]
+        return conversation_id[GroupMe.ID_PREFIX_LENGTH:]
 
     def _dm_to_convo_id(cls, other_user_id: str) -> str:
-        # NOTE: Because of how groupme retrieves direct messages, we use the
-        # ID of the other user, not the 'id' property of direct messages
-        return cls.DM_ID_PREFIX + other_user_id
+        # NOTE: We use the ID of the other user because of how groupme works
+        return GroupMe.DM_ID_PREFIX + other_user_id
 
+    def _group_to_convo_id(cls, group_id: str) -> str:
+        return GroupMe.GROUP_ID_PREFIX + group_id
 
 # fetches resource at URL, converts JSON response to useful Object
 def make_request(base_url, additional_url, token, params={}):
@@ -194,7 +274,7 @@ def make_request(base_url, additional_url, token, params={}):
 
     url = base_url + additional_url + "?token=" + token
     for param, value in params.items():
-        url += "&" + param + "=" + value
+        url += "&" + param + "=" + str(value)
 
     response = urllib.request.urlopen(url)
 
