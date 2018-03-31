@@ -6,7 +6,9 @@ serve:
 install:
 	pipenv install
 
-# Just check for an HTTP error on a request for now
 test:
-	./sanity-test.sh
+	@./sanity.py > /dev/null # Errors are printed to stdout
+
+test-verbose:
+	./sanity.py
 
