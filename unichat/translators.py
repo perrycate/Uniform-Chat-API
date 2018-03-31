@@ -118,13 +118,21 @@ class GroupMe(Translator):
         members = []
         if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
-            cid = self._convo_to_groupme_id(conversation_id)
+            other_user_id = self._convo_to_groupme_id(conversation_id)
 
             # Add other user
-            dm_data = make_request(GroupMe.url_base,
-                                   '/direct_messages/{}'.format(cid), auth)
-            members.append(User(uid=dm_data['direct_messages']['user_id'],
-                            name=dm_data['direct_messages']['name']))
+            dm_data = make_request(GroupMe.url_base, '/direct_messages',
+                                   auth, {'other_user_id': other_user_id})
+
+            # Determine name of other person. Groupme never returns a DM, only
+            # the messages, so we have to find a message _from_ the other
+            # person
+            other_user_name = ''
+            for message in dm_data['direct_messages']:
+                if message['sender_id'] == other_user_id:
+                    other_user_name = message['name']
+
+            members.append(User(uid=other_user_id, name=other_user_name))
 
             # Add ourselves
             self_data = make_request(GroupMe.url_base, '/users/me', auth)
@@ -231,13 +239,20 @@ class GroupMe(Translator):
             dm_data = make_request(GroupMe.url_base, '/direct_messages',
                                    auth, {'other_user_id': other_user_id})
 
-            # False only if there's a code error, _not_ user error
-            assert other_user_id == dm_data['direct_messages']['recipient_id']
+            # Determine name of other person. Groupme never returns a DM, only
+            # the messages, so we have to find a message _from_ the other
+            # person
+            other_user_name = ''
+            for message in dm_data['direct_messages']:
+                if message['sender_id'] == other_user_id:
+                    other_user_name = message['name']
+
 
             result['data'] = Conversation(
                     cid=self._dm_to_convo_id(other_user_id),
-                    name=dm_data['direct_messages']['name'],
-                    last_updated=float(dm_data['direct_messages']['updated_at']))
+                    name=other_user_name,
+                    last_updated=float(
+                            dm_data['direct_messages'][0]['created_at']))
         else:
             gid = self._convo_to_groupme_id(conversation_id)
             group_data = make_request(GroupMe.url_base,
