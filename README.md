@@ -11,6 +11,9 @@ Note: Currently `make test` only runs a very basic test to see if the server
 returns an HTTP error for a valid request, with no other checks of any kind.
 
 Prerequisites: User must have Python 3, pip, and pipenv installed
+Before running tests, modify test.config.sample (adding authentication tokens
+as necessary) and save it as test.congig. Otherwise, any tests requiring
+authentication will fail.
 
 In one terminal:
 

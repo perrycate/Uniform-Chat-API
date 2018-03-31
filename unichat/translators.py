@@ -116,7 +116,7 @@ class GroupMe(Translator):
     def get_users(self, conversation_id, auth='', page=''):
 
         members = []
-        if self._is_direct_message(conversation_id):
+        if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             cid = self._convo_to_groupme_id(conversation_id)
 
@@ -188,7 +188,7 @@ class GroupMe(Translator):
         num_groups, num_dms = len(groups), len(dms)
         groups_count, dms_count = 0, 0
         for conversation in combined:
-            if self._is_direct_message(conversation.cid):
+            if GroupMe._is_direct_message(conversation.cid):
                 dms_count += 1
                 if dms_count == num_dms and num_dms != 0:
                     break
@@ -224,7 +224,7 @@ class GroupMe(Translator):
     def get_conversation(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200} # TODO error handling
 
-        if self._is_direct_message(conversation_id):
+        if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
 
@@ -252,7 +252,7 @@ class GroupMe(Translator):
     def get_messages(self, conversation_id, auth='', page=''):
         result = {'data': {}, 'status': HTTP_200} # TODO error handling
 
-        if self._is_direct_message(conversation_id):
+        if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
 
@@ -305,8 +305,8 @@ class GroupMe(Translator):
         return result
 
 
-    def _is_direct_message(cls, conversation_id: str) -> bool:
-        return conversation_id.startswith(cls.DM_ID_PREFIX)
+    def _is_direct_message(conversation_id: str) -> bool:
+        return conversation_id.startswith(GroupMe.DM_ID_PREFIX)
 
     def _convo_to_groupme_id(cls, conversation_id: str) -> str:
         # Convert client-facing conversation_id into the format groupme expects
