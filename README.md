@@ -23,5 +23,5 @@ In another:
 
 Or, for more verbose output (like the JSON returned from each request):
 
-    # make test-verbose
+    $ make test-verbose
 
