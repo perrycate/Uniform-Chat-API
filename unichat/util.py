@@ -1,8 +1,16 @@
 import json
+import sys
 import urllib.request
 
-# fetches resource at URL, converts JSON response to useful Object
+
+def print_err(*args, **kwargs):
+    """Behaves exactly like print(), but to stderr."""
+    print(*args, file=sys.stderr, **kwargs)
+
+
 def make_request(base_url, additional_url, token, params={}):
+    """Fetches resource at URL, converts JSON response to object."""
+
     # Note: This function may require modification to be more generally useful.
     # I am borrowing it from another project specifically designed to work with
     # groupme's API
