@@ -227,7 +227,6 @@ class GroupMe(Translator):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
 
-            # Add other user
             dm_data = make_request(GroupMe.url_base, '/direct_messages',
                                    auth, {'other_user_id': other_user_id})
 
@@ -250,7 +249,60 @@ class GroupMe(Translator):
         return result
 
     def get_messages(self, conversation_id, auth='', page=''):
-        pass
+        result = {'data': {}, 'status': HTTP_200} # TODO error handling
+
+        if self._is_direct_message(conversation_id):
+            # Expected conversation id: D + other user ID
+            other_user_id = self._convo_to_groupme_id(conversation_id)
+
+            params = {'other_user_id': other_user_id}
+            if page != '':
+                # Groupme paging works by passing the last message ID
+                # (...at this endpoint at least...)
+                params['before_id'] = page
+
+            dms = make_request(GroupMe.url_base, '/direct_messages',
+                                   auth, params)
+            messages = []
+            for message in dms['direct_messages']:
+                messages.append(Message(mid=message['id'],
+                                      uid=message['user_id'],
+                                      user_name=message['name'],
+                                      text=message['text'],
+                                      time=message['created_at']))
+            if len(messages) > 0:
+                last_id = messages[len(messages) - 1].mid
+            else:
+                last_id = ''
+            result['data'] = MessageCollection(messages, next_page=last_id)
+
+        else:
+            gid = self._convo_to_groupme_id(conversation_id)
+
+            params = {}
+            if page != '':
+                # Groupme paging works by passing the last message ID
+                # (...at this endpoint at least...)
+                params['before_id'] = page
+
+            msgs = make_request(GroupMe.url_base,
+                                      '/groups/{}/messages'.format(gid),
+                                      auth, params)
+            messages = []
+            for message in msgs['messages']:
+                messages.append(Message(mid=message['id'],
+                                      uid=message['sender_id'],
+                                      user_name=message['name'],
+                                      text=message['text'],
+                                      time=message['created_at']))
+            if len(messages) > 0:
+                last_id = messages[len(messages) - 1].mid
+            else:
+                last_id = ''
+            result['data'] = MessageCollection(messages, next_page=last_id)
+
+        return result
+
 
     def _is_direct_message(cls, conversation_id: str) -> bool:
         return conversation_id.startswith(cls.DM_ID_PREFIX)

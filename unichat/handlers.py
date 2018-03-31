@@ -26,8 +26,6 @@ class ConversationsList(object):
 
         result = self.translators[service].get_conversations_list(auth, page)
 
-        print(len(result['data'].conversations))
-        import pdb; pdb.set_trace()
         resp.body = jsonify(result['data'])
         resp.status = result['status']
 
