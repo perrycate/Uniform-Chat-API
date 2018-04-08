@@ -1,12 +1,6 @@
 """
 Translates incoming requests into proper queries against GroupMe's public API.
 """
-import urllib.request
-
-# A cleaner approach would be to define our own set of errors and have them map
-# to falcon HTTP errors
-from falcon import HTTP_200
-
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.util import make_request

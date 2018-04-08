@@ -1,10 +1,6 @@
 """
 Mock handler just to test that the rest of the code works elsewhere
 """
-# A cleaner approach would be to define our own set of errors and have them map
-# to falcon HTTP errors
-from falcon import HTTP_200
-
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.translators import Translator
