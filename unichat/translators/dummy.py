@@ -12,53 +12,41 @@ from unichat.translators import Translator
 class Dummy(Translator):
 
     def get_conversations_list(self, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200}
-
-        result['data'] = ConversationCollection(
-                [Conversation(cid='4d7123', name='IW Chat Group',
-                              last_updated=123456789),
-                 Conversation(cid='9d2asdf', name='Some other Group',
-                              last_updated=123456799)],
+        return ConversationCollection(
+                [
+                    Conversation(cid='4d7123',
+                                 name='IW Chat Group',
+                                 last_updated=123456789),
+                    Conversation(cid='9d2asdf',
+                                 name='Some other Group',
+                                 last_updated=123456799),
+                ],
                 next_page='somepagetoken4321')
-        return result
 
     def get_users(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200}
-
-        result['data'] = [User(uid=12345,name="Perry"),
-                          User(uid=32123,name="Jérémie")]
-        return result
+        return [User(uid=12345,name="Perry"), User(uid=32123,name="Jérémie")]
 
     def get_conversation(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200}
-
-        result['data'] = Conversation(
+        return Conversation(
                 cid=conversation_id,
                 name='IW Chat Group',
-                last_updated=123456788
-            )
-        return result
+                last_updated=123456788)
 
     def get_messages(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200}
-
-        result['data'] = MessageCollection(
+        return MessageCollection(
                 messages=[
                     Message(
                         mid=5789,
                         uid=12345,
                         user_name='Perry',
                         text='Hello, World!',
-                        time=1521030283
-                    ),
+                        time=1521030283),
                     Message(
                         mid=6790,
                         uid=32123,
                         user_name='Jérémie',
                         text='Good to see you!',
-                        time=1521030283,
-                    )
+                        time=1521030283),
                 ],
                 next_page='somepagetoken1234'
             )
-        return result

@@ -25,9 +25,7 @@ class ConversationsList(object):
             raise falcon.HTTPBadRequest
 
         result = self.translators[service].get_conversations_list(auth, page)
-
-        resp.body = jsonify(result['data'])
-        resp.status = result['status']
+        resp.body = jsonify(result)
 
 
 """
@@ -48,9 +46,7 @@ class Conversation(object):
             raise falcon.HTTPBadRequest
 
         result = self.translators[service].get_conversation(convo_id, auth)
-
-        resp.body = jsonify(result['data'])
-        resp.status = result['status']
+        resp.body = jsonify(result)
 
 
 """
@@ -71,9 +67,7 @@ class Users(object):
             raise falcon.HTTPBadRequest
 
         result = self.translators[service].get_users(convo_id, auth)
-
-        resp.body = jsonify(result['data'])
-        resp.status = result['status']
+        resp.body = jsonify(result)
 
 
 """
@@ -95,6 +89,4 @@ class Messages(object):
             raise falcon.HTTPBadRequest
 
         result = self.translators[service].get_messages(convo_id, auth, page)
-
-        resp.body = jsonify(result['data'])
-        resp.status = result['status']
+        resp.body = jsonify(result)

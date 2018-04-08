@@ -55,7 +55,7 @@ class GroupMe(Translator):
             for m in data['members']:
                 members.append(User(uid=m['id'], name=m['nickname']))
 
-        return {'data':members, 'status': '200'} # TODO error handling
+        return members # TODO error handling
 
     def get_conversations_list(self, auth='', page='1:0-1:0'):
 
@@ -135,13 +135,9 @@ class GroupMe(Translator):
 
         new_page_token = '{}:{}-{}:{}'.format(dms_page, dms_offset,
                                               groups_page, groups_offset)
-
-        return {'data': ConversationCollection(combined, new_page_token),
-                'status': HTTP_200}
+        return ConversationCollection(combined, new_page_token)
 
     def get_conversation(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200} # TODO error handling
-
         if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
@@ -158,7 +154,7 @@ class GroupMe(Translator):
                     other_user_name = message['name']
 
 
-            result['data'] = Conversation(
+            return Conversation(
                     cid=self._dm_to_convo_id(other_user_id),
                     name=other_user_name,
                     last_updated=float(
@@ -167,16 +163,12 @@ class GroupMe(Translator):
             gid = self._convo_to_groupme_id(conversation_id)
             group_data = make_request(GroupMe.url_base,
                                       '/groups/{}'.format(gid), auth)
-            result['data'] = Conversation(
+            return Conversation(
                     cid=group_data['id'],
                     name=group_data['name'],
                     last_updated=float(group_data['updated_at']))
 
-        return result
-
     def get_messages(self, conversation_id, auth='', page=''):
-        result = {'data': {}, 'status': HTTP_200} # TODO error handling
-
         if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
@@ -200,7 +192,8 @@ class GroupMe(Translator):
                 last_id = messages[len(messages) - 1].mid
             else:
                 last_id = ''
-            result['data'] = MessageCollection(messages, next_page=last_id)
+
+            return MessageCollection(messages, next_page=last_id)
 
         else:
             gid = self._convo_to_groupme_id(conversation_id)
@@ -225,9 +218,8 @@ class GroupMe(Translator):
                 last_id = messages[len(messages) - 1].mid
             else:
                 last_id = ''
-            result['data'] = MessageCollection(messages, next_page=last_id)
 
-        return result
+            return MessageCollection(messages, next_page=last_id)
 
 
     def _is_direct_message(conversation_id: str) -> bool:
