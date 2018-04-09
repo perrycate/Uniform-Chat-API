@@ -1,14 +1,17 @@
 import falcon
 
 from unichat.handlers import ConversationsList, Conversation, Users, Messages
-from unichat.translators import Dummy, GroupMe
+from unichat.translators import Dummy, GroupMe, Slack
 
 
+# Which translator to use for each service. /dummy/* is handled by Dummy(), etc
 translator_map = {
     'dummy': Dummy(),
     'groupme': GroupMe(),
+    'slack': Slack(),
 }
 
+# Set up Falcon Resources (from handlers.py) for each endpoint.
 api = application = falcon.API()
 api.add_route('/{service}/conversations',
               ConversationsList(translator_map))
