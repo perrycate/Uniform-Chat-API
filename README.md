@@ -4,6 +4,20 @@
     invoking the appropriate translator, and eventually returning the result in
     a uniform format.
  * **Translator**: Makes outgoing requests to a particular service.
+ * **Service**: Any messaging API we can make outgoing queries against.
+
+## Relevant bits
+ * `sanity.py`: Basic tests to make sure the API isn't completely broken.
+ * `unichat/app.py`: Sets everything up. Configures handlers+endpoints, routes,
+        errors, etc.
+ * `unichat/errors.py`: Maps raisable exceptions to error handling code.
+ * `unichat/models.py`: Defines basic data objects passed between handlers and
+        translators.
+ * `unichat/util.py`: Contains various generically useful helper functions.
+ * `unichat/handlers.py`: Defines falcon Resources for each endpoint. Handlers
+        invoke the appropriate translator depending on the service requested.
+ * `unichat/translators/*`: Contains Translators to manage requests to various
+        messaging APIs.
 
 ## Testing
 
