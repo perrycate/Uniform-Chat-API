@@ -1,5 +1,7 @@
 import falcon
 
+import unichat.errors
+
 from unichat.handlers import ConversationsList, Conversation, Users, Messages
 from unichat.translators import Dummy, GroupMe, Slack
 
@@ -21,3 +23,6 @@ api.add_route('/{service}/conversations/{convo_id}/users',
               Users(translator_map))
 api.add_route('/{service}/conversations/{convo_id}/messages',
               Messages(translator_map))
+
+# Set up error handling
+unichat.errors.set_mappings(api)
