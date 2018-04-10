@@ -23,7 +23,7 @@ def main():
         token = ''
 
     summary = []
-    for test in [test_dummy,test_groupme]:
+    for test in [test_dummy,test_groupme, test_slack]:
         if has_config:
             token = config.readline().strip()
         service, oks, fails, errors = test(token)
@@ -94,6 +94,34 @@ def test_groupme(token):
 
 
     return ('groupme', oks, fails, errors)
+
+
+def test_slack(token):
+
+    primary_endpoint = 'http://localhost:8000/slack/conversations?token={}'
+    endpoints = [
+        'http://localhost:8000/slack/conversations/{}?token={}',
+        'http://localhost:8000/slack/conversations/{}/users?token={}',
+        'http://localhost:8000/slack/conversations/{}/messages?token={}'
+    ]
+    oks, fails, errors = 0, 0, 0
+
+    oks, fails, errors, data = test_url(primary_endpoint.format(token),
+                                          oks, fails, errors)
+    # Get some conversations to test
+    if data is None or 'conversations' not in data:
+        # Whelp, can't do anything else.
+        return ('slack', oks, fails, errors)
+    data = json.loads(data)
+
+    conversations = data['conversations']
+    chat = conversations[0]['id']
+
+    for url in endpoints:
+        url = url.format(chat, token)
+        oks, fails, errors, _ = test_url(url, oks, fails, errors)
+
+    return ('slack', oks, fails, errors)
 
 
 def test_url(url, oks, fails, errs):
