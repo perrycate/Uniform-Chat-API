@@ -3,7 +3,7 @@ Translates incoming requests into proper queries against GroupMe's public API.
 """
 import json
 
-from unichat.errors import AuthenticationError, ServerError
+from unichat.errors import AuthenticationError, ServiceError
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.util import make_request
@@ -24,7 +24,7 @@ class Slack(Translator):
 
         channels = []
         if 'channels' not in data:
-            raise ServerError
+            raise ServiceError
         for channel in data['channels']:
             channels.append(Conversation(cid=channel['id'],
                                          name=channel['name'],
@@ -50,7 +50,7 @@ class Slack(Translator):
 
         messages = []
         if ('messages' not in data):
-            raise ServerError
+            raise ServiceError
         for message in data['messages']:
             messages.append(Message(mid='', # TODO standin: hash of data?
                                     uid=message['user'],
@@ -60,7 +60,7 @@ class Slack(Translator):
 
         if 'has_more' in data and data['has_more']:
             if 'next_cursor' not in data['response_metadata']:
-                raise ServerError
+                raise ServiceError
             cursor = data['response_metadata']['next_cursor']
         else:
             cursor = Slack.PAGING_DONE_TOKEN
@@ -79,7 +79,7 @@ class Slack(Translator):
                     raise AuthenticationError
                 if data['error'] == 'missing_scope':
                     raise AuthenticationError
-            raise ServerError
+            raise ServiceError
 
         return data
 
