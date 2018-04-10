@@ -8,7 +8,8 @@ def print_err(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def make_request(base_url, additional_url, token, params={}):
+def make_request(base_url, additional_url, token, params={},
+                 strip_envelope=True):
     """Fetches resource at URL, converts JSON response to object."""
 
     # Note: This function may require modification to be more generally useful.
@@ -24,6 +25,8 @@ def make_request(base_url, additional_url, token, params={}):
     # Convert raw response to usable JSON object
     response_as_string = response.read().decode('utf-8')
     obj = json.loads(response_as_string)
-
-    return obj["response"]
+    if strip_envelope:
+        return obj["response"]
+    else:
+        return obj
 
