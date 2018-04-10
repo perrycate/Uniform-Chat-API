@@ -14,6 +14,7 @@ class Slack(Translator):
 
     SERVICE = "Slack" # For identification in errors, etc.
     URL_BASE = 'https://slack.com/api'
+
     def get_users(self, conversation_id, auth='', page=''):
         raise NotImplementedError
 
@@ -27,11 +28,16 @@ class Slack(Translator):
             channels.append(Conversation(cid=channel['id'],
                                          name=channel['name'],
                                          last_updated='')) # TODO workaround
+        # TODO paging
         return ConversationCollection(channels, '')
 
-
     def get_conversation(self, conversation_id, auth='', page=''):
-        raise NotImplementedError
+        data = self._make_request('/conversations.info', auth,
+                                  {'channel': conversation_id})
+        return Conversation(cid=data['channel']['id'],
+                            name=data['channel']['name'],
+                            # is last_read good enough for last_updated?
+                            last_updated=data['channel']['last_read'])
 
     def get_messages(self, conversation_id, auth='', page=''):
         raise NotImplementedError
