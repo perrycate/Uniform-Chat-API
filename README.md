@@ -1,4 +1,14 @@
 # Uniform Chat API
+## Acquiring Access Tokens
+### GroupMe Instructions
+1. Log into `dev.groupme.com`:
+![Screenshot of dev.groupme.com with login circled](/docs/screenshots/Screenshot_20180411_224924.png)
+
+2. Click "Access Token" in the upper right corner:
+![Screenshot of dev.groupme.com, logged in, with "Access Token" circled](/docs/screenshots/Screenshot_20180411_225501.png)
+
+3. You should see a popup with your API Access token. You're done!
+
 ## Contributing
 ### Terminology
  * **Handler** : Handles all incoming HTTP requests for a particular resource,
