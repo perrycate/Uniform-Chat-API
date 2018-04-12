@@ -1,4 +1,5 @@
 __pycache__
+.directory
 .mypy_cache
 test.config
 *.swp
