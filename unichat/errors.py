@@ -8,8 +8,8 @@ def set_mappings(app):
     """
     app.add_error_handler(NotImplementedError, _not_implemented)
     # Most generic handler must come first
-    app.add_error_handler(ServiceError, _service_error)
-    app.add_error_handler(AuthenticationError, _auth_error)
+    #app.add_error_handler(ServiceError, _service_error)
+    #app.add_error_handler(AuthenticationError, _auth_error)
 
 
 #

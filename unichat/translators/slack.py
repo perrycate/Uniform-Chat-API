@@ -6,22 +6,42 @@ import json
 from unichat.errors import AuthenticationError, ServiceError
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
-from unichat.util import make_request
+from unichat.util import make_request, TokenStore
 from unichat.translators import Translator
 
 
 class Slack(Translator):
 
-    SERVICE = "Slack" # For identification in errors, etc.
+    SERVICE = 'Slack' # For identification in errors, etc.
     URL_BASE = 'https://slack.com/api'
     PAGING_DONE_TOKEN = 'done'
 
+    def __init__(self):
+        self._token_store = TokenStore()
+
     def get_users(self, conversation_id, auth='', page=''):
-        raise NotImplementedError
+        # Get list of users in this chat (this only gives us IDs though)
+        users_list_raw = self._make_request('/conversations.members', auth,
+                                            {'channel': conversation_id})
+        if 'members' not in users_list_raw:
+            raise ServiceError
+        user_ids = users_list_raw['members']
+        # TODO paging
+
+        # Associate names etc with user ids
+        all_users = self._fetch_users_info(auth)
+        users_in_chat = []
+        for uid in user_ids:
+            if uid not in all_users:
+                raise ServiceError
+            users_in_chat.append(all_users[uid])
+
+        return users_in_chat
+
 
     def get_conversations_list(self, auth='', page=''):
+        # Retrieve conversations data, populate list
         data = self._make_request('/conversations.list', auth)
-
         channels = []
         if 'channels' not in data:
             raise ServiceError
@@ -45,12 +65,14 @@ class Slack(Translator):
         if page == Slack.PAGING_DONE_TOKEN:
             return MessageCollection([], next_page='')
 
+        # Retrieve message data
         data = self._make_request('/conversations.history', auth,
                                   {'channel': conversation_id, 'cursor': page})
-
-        messages = []
         if ('messages' not in data):
             raise ServiceError
+
+        # populate array of message objects
+        messages = []
         for message in data['messages']:
             messages.append(Message(mid='', # TODO standin: hash of data?
                                     uid=message['user'],
@@ -58,6 +80,7 @@ class Slack(Translator):
                                     text=message['text'],
                                     time=message['ts'])) # TODO uniform format
 
+        # Check for pagination token
         if 'has_more' in data and data['has_more']:
             if 'next_cursor' not in data['response_metadata']:
                 raise ServiceError
@@ -83,4 +106,36 @@ class Slack(Translator):
 
         return data
 
+    def _fetch_users_info(self, token):
+        # Get users in the slack associated with this token, if we haven't yet.
+
+        # Check for cached result
+        if self._token_store.has_data(token):
+            return self._token_store.get_data(token)
+
+        # request users list, iterating over pages
+        pages_remaining = True
+        page = ''
+        users = {}
+        while pages_remaining:
+            data = self._make_request('/users.list', token,
+                                      {'limit': 1000, 'cursor': page})
+            if 'members' not in data:
+                raise ServiceError
+            for user_raw in data['members']:
+                uid = user_raw['id']
+                users[uid] = User(uid=uid, name=user_raw['name'])
+
+            if 'response_metadata' not in data or \
+               'next_cursor' not in data['response_metadata'] or \
+               data['response_metadata']['next_cursor'] == '':
+                pages_remaining = False
+
+            page = data['response_metadata']['next_cursor']
+
+        # Cache users for next time
+        self._token_store.set_data(token, users)
+
+        # It's cached now and I don't want to repeat myself
+        return self._fetch_users_info(token)
 

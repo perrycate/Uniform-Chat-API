@@ -30,3 +30,26 @@ def make_request(base_url, additional_url, token, params={},
     else:
         return obj
 
+
+class TokenStore(object):
+    """
+    Stores arbitrary data on a per-token basis.
+
+    Right now it's just an extra layer of abstraction over a dict. It's here
+    because there are places where a dict would suffice that I may need more
+    permanent storage later and want to minimize changes.
+    """
+
+    def __init__(self):
+        self._store = {}
+
+    def has_data(self, token):
+        return token in self._store
+
+    def get_data(self, token):
+        if not self.has_data(token):
+            return None
+        return self._store[token]
+
+    def set_data(self, token, data):
+        self._store[token] = data
