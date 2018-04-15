@@ -7,8 +7,8 @@ install:
 	pipenv install
 
 test:
-	@pipenv run ./sanity.py test.config > /dev/null # Errors are printed to stdout
+	@pipenv run ./sanity_test.py test.config > /dev/null # Errors are printed to stdout
 
 test-verbose:
-	pipenv run ./sanity.py test.config
+	pipenv run ./sanity_test.py test.config
 
