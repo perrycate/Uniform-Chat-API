@@ -9,6 +9,33 @@
 
 3. You should see a popup with your API Access token. You're done!
 
+### Slack Instructions
+1. Go to `api.slack.com` and click "Start Building":
+![Screenshot of api.slack.com with "Start Building" circled](/docs/screenshots/Screenshot_20180411_231758.png)
+
+2. Enter an app name and select a workspace. You may be prompted to log in if your workspace is not listed:
+![Screenshot of the dialog for creating a slack app](/docs/screenshots/Screenshot_20180411_232107.png)
+
+3. Under "Add features and functionality", click "Permissions":
+![Screenshot of the dialog for creating a slack app](/docs/screenshots/Screenshot_20180416_170851.png)
+
+4. Add the following permission scopes, then "Save Changes":
+    * users:read
+    * channels:history
+    * groups:history
+    * im:history
+    * mpim:history
+    * channels:read
+    * groups:read
+    * im:read
+    * mpim:read
+![Screenshot of the section of the page for adding scopes](/docs/screenshots/Screenshot_20180416_175300.png)
+
+5. Scroll back up and click "Install App to Workplace". When asked to confirm, click "Authorize":
+![Screenshot of the section of the page with the install button circled](/docs/screenshots/Screenshot_20180416_183319.png)
+
+6. Your OAuth Access Token should now be visible under "Tokens for your Workspace". You're done!
+
 ## Contributing
 ### Terminology
  * **Handler** : Handles all incoming HTTP requests for a particular resource,
