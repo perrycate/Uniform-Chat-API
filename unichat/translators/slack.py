@@ -21,12 +21,19 @@ class Slack(Translator):
 
     def get_users(self, conversation_id, auth='', page=''):
         # Get list of users in this chat (this only gives us IDs though)
-        users_list_raw = self._make_request('/conversations.members', auth,
-                                            {'channel': conversation_id})
-        if 'members' not in users_list_raw:
-            raise ServiceError
-        user_ids = users_list_raw['members']
-        # TODO paging
+        user_ids = []
+        pages_remain = True
+        while pages_remain:
+            users_list_raw = self._make_request('/conversations.members', auth,
+                                                {'channel': conversation_id,
+                                                 'cursor': page})
+            # Add users retrieved
+            if 'members' not in users_list_raw:
+                raise ServiceError
+            user_ids += users_list_raw['members']
+
+            # Keep going as long as there are more users to retrieve
+            pages_remain = self._has_pages_remaining(users_list_raw)
 
         # Associate names etc with user ids
         all_users = self._fetch_users_info(auth)
@@ -126,16 +133,21 @@ class Slack(Translator):
                 uid = user_raw['id']
                 users[uid] = User(uid=uid, name=user_raw['name'])
 
-            if 'response_metadata' not in data or \
-               'next_cursor' not in data['response_metadata'] or \
-               data['response_metadata']['next_cursor'] == '':
+            # Handle paging
+            if self._has_pages_remaining(data):
+                page = data['response_metadata']['next_cursor']
+            else:
                 pages_remaining = False
-
-            page = data['response_metadata']['next_cursor']
 
         # Cache users for next time
         self._token_store.set_data(token, users)
 
         # It's cached now and I don't want to repeat myself
         return self._fetch_users_info(token)
+
+    def _has_pages_remaining(self, data):
+        print(data)
+        return 'response_metadata' in data and \
+               'next_cursor' in data['response_metadata'] and \
+               data['response_metadata']['next_cursor'] is not ''
 
