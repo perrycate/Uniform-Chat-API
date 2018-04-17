@@ -19,9 +19,10 @@ class Slack(Translator):
     def __init__(self):
         self._token_store = TokenStore()
 
-    def get_users(self, conversation_id, auth='', page=''):
+    def get_users(self, conversation_id, auth=''):
         # Get list of users in this chat (this only gives us IDs though)
         user_ids = []
+        page = ''
         pages_remain = True
         while pages_remain:
             users_list_raw = self._make_request('/conversations.members', auth,
@@ -34,6 +35,8 @@ class Slack(Translator):
 
             # Keep going as long as there are more users to retrieve
             pages_remain = self._has_pages_remaining(users_list_raw)
+            if pages_remain:
+                page = self._get_page_cursor(users_list_raw)
 
         # Associate names etc with user ids
         all_users = self._fetch_users_info(auth)
@@ -45,19 +48,30 @@ class Slack(Translator):
 
         return users_in_chat
 
-
     def get_conversations_list(self, auth='', page=''):
         # Retrieve conversations data, populate list
-        data = self._make_request('/conversations.list', auth)
+        if page == Slack.PAGING_DONE_TOKEN:
+            return ConversationCollection([], '')
+
         channels = []
-        if 'channels' not in data:
-            raise ServiceError
-        for channel in data['channels']:
-            channels.append(Conversation(cid=channel['id'],
-                                         name=channel['name'],
-                                         last_updated='')) # TODO workaround
-        # TODO paging
-        return ConversationCollection(channels, '')
+        pages_remain = True
+        while pages_remain:
+            data = self._make_request('/conversations.list', auth,
+                                      {'cursor': page})
+            # Add conversations retrieved
+            if 'channels' not in data:
+                raise ServiceError
+            for channel in data['channels']:
+                channels.append(Conversation(cid=channel['id'],
+                                             name=channel['name'],
+                                             last_updated='')) # TODO workaround
+            pages_remain = self._has_pages_remaining(data)
+            if pages_remain:
+                page = sef._get_page_cursor(data)
+            else:
+                page = Slack.PAGING_DONE_TOKEN
+
+        return ConversationCollection(channels, page)
 
     def get_conversation(self, conversation_id, auth='', page=''):
         data = self._make_request('/conversations.info', auth,
@@ -99,7 +113,6 @@ class Slack(Translator):
 
     def _make_request(self, endpoint, auth, params={}):
         # Convenience method to reduce the number of arguments passed around
-
         data = make_request(Slack.URL_BASE, endpoint, auth, params, False)
 
         # Check for errors
@@ -146,8 +159,10 @@ class Slack(Translator):
         return self._fetch_users_info(token)
 
     def _has_pages_remaining(self, data):
-        print(data)
         return 'response_metadata' in data and \
                'next_cursor' in data['response_metadata'] and \
                data['response_metadata']['next_cursor'] is not ''
+
+    def _get_page_cursor(self, data):
+        return data['response_metadata']['next_cursor']
 
