@@ -73,10 +73,10 @@ class Slack(Translator):
 
         return ConversationCollection(channels, page)
 
-    def get_conversation(self, conversation_id, auth='', page=''):
+    def get_conversation(self, conversation_id, auth=''):
         data = self._make_request('/conversations.info', auth,
                                   {'channel': conversation_id})
-        # TODO paging
+
         return Conversation(cid=data['channel']['id'],
                             name=data['channel']['name'],
                             # is last_read good enough for last_updated?

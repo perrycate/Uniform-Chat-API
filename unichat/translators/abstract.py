@@ -17,7 +17,7 @@ class Translator(ABC):
         pass
 
     @abstractmethod
-    def get_conversation(self, conversation_id, auth, page):
+    def get_conversation(self, conversation_id, auth):
         pass
 
     @abstractmethod

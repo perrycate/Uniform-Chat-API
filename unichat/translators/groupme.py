@@ -131,7 +131,7 @@ class GroupMe(Translator):
                                               groups_page, groups_offset)
         return ConversationCollection(combined, new_page_token)
 
-    def get_conversation(self, conversation_id, auth='', page=''):
+    def get_conversation(self, conversation_id, auth=''):
         if GroupMe._is_direct_message(conversation_id):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
