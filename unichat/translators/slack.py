@@ -95,10 +95,12 @@ class Slack(Translator):
         # populate array of message objects
         messages = []
         users = self._fetch_users_info(auth)
-        for message in data['messages']:
+        for index in range(len(data['messages'])):
+            message = data['messages'][index]
+            message_id = self._create_message_id(conversation_id, page, index)
             user_id = message['user']
             user = users[user_id]
-            messages.append(Message(mid='', # TODO standin: hash of data?
+            messages.append(Message(mid=message_id,
                                     uid=user_id,
                                     user_name=user.name,
                                     text=message['text'],
@@ -168,4 +170,7 @@ class Slack(Translator):
 
     def _get_page_cursor(self, data):
         return data['response_metadata']['next_cursor']
+
+    def _create_message_id(self, cid, cursor, index):
+        return '{}@{}@{}'.format(cid, cursor, index)
 
