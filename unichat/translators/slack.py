@@ -94,10 +94,13 @@ class Slack(Translator):
 
         # populate array of message objects
         messages = []
+        users = self._fetch_users_info(auth)
         for message in data['messages']:
+            user_id = message['user']
+            user = users[user_id]
             messages.append(Message(mid='', # TODO standin: hash of data?
-                                    uid=message['user'],
-                                    user_name='', # TODO
+                                    uid=user_id,
+                                    user_name=user.name,
                                     text=message['text'],
                                     time=message['ts'])) # TODO uniform format
 
