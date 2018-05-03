@@ -29,7 +29,7 @@ Relevant Files
    messaging APIs.
 
 Testing
-------------------------------
+==============================
 
 .. Note::
     Currently `make test` only runs a very basic test to see if the server

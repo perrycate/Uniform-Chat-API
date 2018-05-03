@@ -2,7 +2,7 @@
 Getting Started
 ******************************
 
-Setup
+Installation
 ==============================
 
 Usage

@@ -7,6 +7,9 @@ Unichat: The Universal Chat API
 
 Unichat is a 
 
+How it works
+===============================
+
 Potential uses
 ===============================
 
