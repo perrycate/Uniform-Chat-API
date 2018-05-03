@@ -18,6 +18,7 @@ httpie = "*"
 mypy = "*"
 sphinx = "*"
 sphinx-autobuild = "*"
+sphinx-rtd-theme = "*"
 
 
 [requires]
