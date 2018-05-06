@@ -36,6 +36,10 @@ Conversations List
 
 	GET /:service/conversations
 
+Returns a paginated list of conversations. May return up to 1,000 conversations,
+but can return less. An empty conversations list indicates there are no more
+conversations to retrieve.
+
 Required parameters:
 
 ========== =========== =========== ===========
