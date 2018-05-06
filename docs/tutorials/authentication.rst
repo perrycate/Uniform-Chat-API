@@ -22,7 +22,8 @@ Slack Instructions
 .. figure:: /screenshots/Screenshot_20180411_231758.png
 
 2. Enter an app name and select a workspace. You may be prompted to log in if
-   your workspace is not listed:
+   your workspace is not listed. If so, you may wish to log in using another
+   tab - you will not be redirected back to this page:
 
 .. figure:: /screenshots/Screenshot_20180411_232107.png
 
@@ -47,5 +48,6 @@ Slack Instructions
    click "Authorize":
 .. figure:: /screenshots/Screenshot_20180416_183319.png
 
-6. Your OAuth Access Token should now be visible under "Tokens for your Workspace". You're done!
+6. Your OAuth Access Token should now be visible under "Tokens for your
+   Workspace". You're done!
 
