@@ -1,17 +1,31 @@
-.. _introduction:
+.. _api reference:
+
 API Reference
 ******************************
 
 Terminology
 ==============================
-* `HTTP <https://en.wikipedia.org/wiki/HTTP>`_: Application-layer web protocol browsers and most Web APIs use.
-* `Proxy Server <https://en.wikipedia.org/wiki/Proxy_Server>`_: A “middleman” that fetches pages on the client’s behalf
-* `JSON <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON>`_: Data format used to pass data objects between client and server
+* `HTTP <https://en.wikipedia.org/wiki/HTTP>`_: Application-layer web protocol
+  browsers and most Web APIs use.
+* `Proxy Server <https://en.wikipedia.org/wiki/Proxy_Server>`_: A “middleman”
+  that fetches pages on the client’s behalf
+* `JSON <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON>`_:
+  Data format used to pass data objects between client and server
 * Service: A messaging API we might want to interact with
 * Conversation: Any series of messages between two or more participants
 
 Services
 ==============================
+
+========= =============== =========
+Service   Status          Notes
+--------- --------------- ---------
+GroupMe   Full Support
+Slack     Full Support    May also add support for reading from file archives.
+Discord   Support planned Similar API to slack, shouldn't take long.
+========= =============== =========
+
+:: _endpoints:
 
 Endpoints
 ==============================
@@ -36,7 +50,8 @@ Optional parameters:
 ========== =========== =========== ===========
 Name       Location    Type        Description
 ---------- ----------- ----------- -----------
-page       params      string      Pass this in to return the next segment of conversations
+page       params      string      Pass this in to return the next segment of
+                                   conversations
 ========== =========== =========== ===========
 
 Example query: ``/groupme/conversations``:
@@ -155,7 +170,8 @@ Optional parameters:
 ========== =========== =========== ===========
 Name       Location    Type        Description
 ---------- ----------- ----------- -----------
-page       params      string      Pass this in to return the next segment of conversations
+page       params      string      Pass this in to return the next segment of
+                                   conversations
 ========== =========== =========== ===========
 
 
