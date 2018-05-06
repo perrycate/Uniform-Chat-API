@@ -79,3 +79,11 @@ Or, for more verbose output (such as the JSON returned from each request):
 
     $ make test-verbose
 
+### Documentation
+To generate and view the documentation: (after running `make install` in the
+base directory):
+
+    cd ./docs
+    make livehtml
+
+This will run an auto-reloading server on port 8000. 
