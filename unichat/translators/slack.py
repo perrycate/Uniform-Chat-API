@@ -97,6 +97,14 @@ class Slack(Translator):
         users = self._fetch_users_info(auth)
         for index in range(len(data['messages'])):
             message = data['messages'][index]
+            
+            # Unsupported event
+            # FIXME: some important events are not captured this way
+            # (e.g., message_changed, message_replied)
+            # https://api.slack.com/events/message
+            if not 'user' in message:
+                continue
+            
             message_id = self._create_message_id(conversation_id, page, index)
             user_id = message['user']
             user = users[user_id]
