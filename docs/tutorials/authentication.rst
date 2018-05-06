@@ -3,6 +3,10 @@
 Authentication
 ==============================
 
+These instructions are to help you authenticate with external APIs. The tokens
+you acquire should be included as the ``token`` parameter in all API calls to
+Unichat. For more information, see the :ref:`api reference`.
+
 GroupMe Instructions
 ------------------------------
 1. Log into ``dev.groupme.com``:
