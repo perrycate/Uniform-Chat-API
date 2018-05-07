@@ -3,7 +3,7 @@ Translates incoming requests into proper queries against GroupMe's public API.
 """
 import json
 
-from unichat.errors import AuthenticationError, ServiceError
+from unichat.errors import AuthenticationError, ServiceError, UnauthorizedError
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.util import make_request, TokenStore
@@ -97,14 +97,14 @@ class Slack(Translator):
         users = self._fetch_users_info(auth)
         for index in range(len(data['messages'])):
             message = data['messages'][index]
-            
+
             # Unsupported event
             # FIXME: some important events are not captured this way
             # (e.g., message_changed, message_replied)
             # https://api.slack.com/events/message
             if not 'user' in message:
                 continue
-            
+
             message_id = self._create_message_id(conversation_id, page, index)
             user_id = message['user']
             user = users[user_id]
@@ -126,16 +126,17 @@ class Slack(Translator):
 
     def _make_request(self, endpoint, auth, params={}):
         # Convenience method to reduce the number of arguments passed around
-        data = make_request(Slack.URL_BASE, endpoint, auth, params, False)
+        data = make_request(Slack.URL_BASE, endpoint, auth, params)
 
         # Check for errors
         if data['ok'] != True:
             if 'error' in data:
-                if data['error'] == 'not_authed':
+                if (data['error'] == 'not_authed') or (data['error'] == 'invalid_auth'):
                     raise AuthenticationError
                 if data['error'] == 'missing_scope':
-                    raise AuthenticationError
-            raise ServiceError
+                    raise UnauthorizedError
+                raise ServiceError(data['error'])
+            raise ServiceError(data)
 
         return data
 

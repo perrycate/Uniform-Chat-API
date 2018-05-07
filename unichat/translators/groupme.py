@@ -25,7 +25,7 @@ class GroupMe(Translator):
             other_user_id = self._convo_to_groupme_id(conversation_id)
 
             # Add other user
-            dm_data = make_request(GroupMe.URL_BASE, '/direct_messages',
+            dm_data = self._make_request('/direct_messages',
                                    auth, {'other_user_id': other_user_id})
 
             # Determine name of other person. Groupme never returns a DM, only
@@ -39,13 +39,12 @@ class GroupMe(Translator):
             members.append(User(uid=other_user_id, name=other_user_name))
 
             # Add ourselves
-            self_data = make_request(GroupMe.URL_BASE, '/users/me', auth)
+            self_data = self._make_request('/users/me', auth)
             members.append(User(uid=self_data['id'], name=self_data['name']))
         else:
             # Expected conversation id: G + group ID
             gid = self._convo_to_groupme_id(conversation_id)
-            data = make_request(GroupMe.URL_BASE,
-                                '/groups/{}'.format(gid), auth)
+            data = self._make_request('/groups/{}'.format(gid), auth)
             for m in data['members']:
                 members.append(User(uid=m['id'], name=m['nickname']))
 
@@ -60,8 +59,7 @@ class GroupMe(Translator):
 
         # Retrieve direct messages, convert to Conversations
         dms = []
-        dms_raw = make_request(
-            GroupMe.URL_BASE, '/chats', auth,
+        dms_raw = self._make_request('/chats', auth,
             {'page': dms_page, 'per_page': GroupMe.DMS_PER_PAGE}
         )
         i = 0
@@ -78,8 +76,7 @@ class GroupMe(Translator):
 
         # Retrieve group messages, convert to Conversations
         groups = []
-        groups_raw = make_request(
-            GroupMe.URL_BASE, '/groups', auth,
+        groups_raw = self._make_request('/groups', auth,
             {'page': groups_page, 'per_page': GroupMe.GROUPS_PER_PAGE}
         )
         i = 0
@@ -136,8 +133,8 @@ class GroupMe(Translator):
             # Expected conversation id: D + other user ID
             other_user_id = self._convo_to_groupme_id(conversation_id)
 
-            dm_data = make_request(GroupMe.URL_BASE, '/direct_messages',
-                                   auth, {'other_user_id': other_user_id})
+            dm_data = self._make_request('/direct_messages', auth,
+                                         {'other_user_id': other_user_id})
 
             # Determine name of other person. Groupme never returns a DM, only
             # the messages, so we have to find a message _from_ the other
@@ -155,8 +152,7 @@ class GroupMe(Translator):
                             dm_data['direct_messages'][0]['created_at']))
         else:
             gid = self._convo_to_groupme_id(conversation_id)
-            group_data = make_request(GroupMe.URL_BASE,
-                                      '/groups/{}'.format(gid), auth)
+            group_data = self._make_request('/groups/{}'.format(gid), auth)
             return Conversation(
                     cid=group_data['id'],
                     name=group_data['name'],
@@ -173,8 +169,7 @@ class GroupMe(Translator):
                 # (...at this endpoint at least...)
                 params['before_id'] = page
 
-            dms = make_request(GroupMe.URL_BASE, '/direct_messages',
-                                   auth, params)
+            dms = self._make_request('/direct_messages', auth, params)
             messages = []
             for message in dms['direct_messages']:
                 messages.append(Message(mid=message['id'],
@@ -198,9 +193,8 @@ class GroupMe(Translator):
                 # (...at this endpoint at least...)
                 params['before_id'] = page
 
-            msgs = make_request(GroupMe.URL_BASE,
-                                '/groups/{}/messages'.format(gid),
-                                auth, params)
+            msgs = self._make_request('/groups/{}/messages'.format(gid), auth,
+                                      params)
             messages = []
             for message in msgs['messages']:
                 messages.append(Message(mid=message['id'],
@@ -214,6 +208,13 @@ class GroupMe(Translator):
                 last_id = ''
 
             return MessageCollection(messages, next_page=last_id)
+
+    def _make_request(self, endpoint, auth, params={}):
+        data = make_request(GroupMe.URL_BASE,
+                            endpoint,
+                            auth, params)
+
+        return data['response']
 
 
     def _is_direct_message(conversation_id: str) -> bool:
