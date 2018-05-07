@@ -86,4 +86,4 @@ base directory):
     cd ./docs
     make livehtml
 
-This will run an auto-reloading server on port 8000. 
+This will run an auto-reloading server on port 8080.
