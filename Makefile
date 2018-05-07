@@ -1,7 +1,7 @@
 .PHONY: install serve test
 
 serve: 
-	pipenv run gunicorn --reload unichat.app
+	pipenv run gunicorn --reload --log-level=WARNING unichat.app
 
 install:
 	pipenv install
@@ -12,3 +12,5 @@ test:
 test-verbose:
 	pipenv run ./sanity_test.py test.config
 
+clean:
+	rm *.log
