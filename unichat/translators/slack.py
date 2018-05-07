@@ -4,7 +4,8 @@ Translates incoming requests into proper queries against GroupMe's public API.
 import json
 import logging
 
-from unichat.errors import AuthenticationError, ServiceError, UnauthorizedError
+from unichat.errors import AuthenticationError, ServiceError, NotFoundError, \
+                                UnauthorizedError
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.util import make_request, TokenStore
@@ -136,12 +137,16 @@ class Slack(Translator):
         # Check for errors
         if data['ok'] != True:
             if 'error' in data:
-                if (data['error'] == 'not_authed') or (data['error'] == 'invalid_auth'):
-                    raise AuthenticationError
-                if data['error'] == 'missing_scope':
-                    raise UnauthorizedError
-                raise ServiceError('Error returned from slack api: '
-                                   '{}'.format( data['error']))
+                error = data['error']
+                if error == 'not_authed' or error == 'invalid_auth':
+                    raise AuthenticationError(error)
+                elif error == 'missing_scope' or error == 'no_permission':
+                    raise UnauthorizedError(error)
+                elif error == 'channel_not_found':
+                    raise NotFoundError(error)
+                else:
+                    raise ServiceError('Error returned from slack api: '
+                                       '{}'.format( data['error']))
             else:
                 raise ServiceError('Unknown error from slack api. '
                                    'Full response: {}'.format(data))

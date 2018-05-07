@@ -17,6 +17,7 @@ def set_mappings(app):
     app.add_error_handler(ServiceError, _service_error)
     app.add_error_handler(AuthenticationError, _auth_error)
     app.add_error_handler(UnauthorizedError, _forbidden_error)
+    app.add_error_handler(NotFoundError, _not_found_error)
 
     logging.info('Set error maps.')
 
@@ -56,6 +57,10 @@ def _forbidden_error(exception, request, response, params):
                 request.params.get('token', '')))
     response.status = falcon.HTTP_403 # HTTP Forbidden
 
+def _not_found_error(exception, request, response, params):
+    logging.info('{} not found'.format(request.path))
+    response.status = falcon.HTTP_404 # HTTP Not Found
+
 
 #
 # Error Definitions
@@ -80,4 +85,9 @@ class UnauthorizedError(ServiceError):
     """
     pass
 
+class NotFoundError(ServiceError):
+    """
+    Raised when a requested resource could not be found.
+    """
+    pass
 
