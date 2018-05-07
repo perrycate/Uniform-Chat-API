@@ -1,4 +1,5 @@
 import falcon
+import json
 import logging
 import sys
 import traceback
@@ -34,6 +35,7 @@ def _unknown_error(exception, request, response, params):
 
 def _service_error(exception, request, response, params):
     logging.error(traceback.format_exc())
+    response.body = json.dumps({'error': str(exception)})
     response.status = falcon.HTTP_502 # HTTP Bad Gateway
 
 def _auth_error(exception, request, response, params):
