@@ -3,6 +3,13 @@
 Authentication
 ==============================
 
+.. NOTE. I would have some introduction, such as explaining what are these
+   tokens, that they are personal to the developer, and should not be
+   distributed. If Unichat is deployed as part of some other service, then
+   care must be taken to retrieve the user's token (not the developer's).
+   In fact, it is one future feature of Unichat to be able to retrieve the
+   tokens through some OAuth type UI request.
+
 GroupMe Instructions
 ------------------------------
 1. Log into ``dev.groupme.com``:

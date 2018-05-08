@@ -17,6 +17,12 @@ Terminology
 Services
 ==============================
 
+.. NOTE. What the heck is "Full Support"? I think you need to first define a
+   "Tier 1" level of support, where there is read access to the elementary
+   messages (because, for instance, Slack's extension misses a lot of content
+   that is submitted as a reply or as an edited message). We can then advertise
+   progress on a "Tier 2" of support that has more stringent requirements.
+
 ========= =============== =========
 Service   Status          Notes
 --------- --------------- ---------
@@ -24,6 +30,8 @@ GroupMe   Full Support
 Slack     Full Support    May also add support for reading from file archives.
 Discord   Support planned Similar API to slack, shouldn't take long.
 ========= =============== =========
+
+.. NOTE. This below seems like a typo?
 
 :: _endpoints:
 
@@ -111,6 +119,11 @@ Example response:::
 		"name": "The Friendly Friends"
 	}
 
+.. NOTE. It'd be nice to have some details such as whether one can always
+   expect the timestamp to be in this format, or present, or what we know
+   about "id" if anything at all. In other calls, same question if about
+   different outputs (i.e., if it is the same type of output, don't
+   copy paste explanations)
 
 Users
 ------------------------------

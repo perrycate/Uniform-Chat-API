@@ -6,17 +6,26 @@ Introduction
 Unichat: The Universal Chat API
 ===============================
 
+.. NOTE. FIXME: You need to sell this a bit more.
+
+   "Unichat is a server designed to allow the transcripts for multiple social media
+   chat to be consumed through a uniform API. Because none of these chat services
+   have agreed on a standard, this project seeks to enable more convenient personal
+   analytics for interpersonal conversations through a common interface. In
+   particular: Queries to the unichat server follow the same API
+   and return data in the same format regardless of the outgoing service."
+
 Unichat is a server designed to allow querying multiple chat APIs at the same
 time. Queries to the unichat server follow the same API and return data in the
 same format regardless of the outgoing service.
 
 Unichat's interface is:
 
- 1. Simple. Only the bare minimum necessary is returned for each API call, so
+ 1. *Simple.* Only the bare minimum necessary is returned for each API call, so
     it's easy to learn and use quickly.
- 2. Uniform. If you write something to interact with one service, it will work
+ 2. *Uniform.* If you write something to interact with one service, it will work
     with any other supported service.
- 3. Well-documented. Everything you need to use Unichat can be found on this
+ 3. *Well-documented.* Everything you need to use Unichat can be found on this
     site. Disagree? Raise an issue `here.
     <https://github.com/TheGuyWithTheFace/Uniform-Chat-API/issues>`_
 
@@ -45,7 +54,8 @@ read over the section on :ref:`contributing`.
 Example uses
 ===============================
 
-Looking for ideas? Here are some things Unichat can be used for:
+Looking for ideas? Here are some data analysis questions Unichat can help
+investigate:
 
 * A script to download messages from any chat service.
 * A program to see who is the most verbose in a chat.
