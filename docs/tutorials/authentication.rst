@@ -3,6 +3,21 @@
 Authentication
 ==============================
 
+Unichat interacts with various services on behalf of the client. Because of
+this, clients must log in (or *authenticate*) with these other services first
+before these services will respond with your messages.
+
+Modern Authentication is almost always done through
+`Oauth2 <https://oauth.net/2/>`_. After a client logs in, the server provides a
+*token* (usually a string of some sort). On every request, the client must
+include the provided token to prove to the server that the client is logged in.
+Here are instructions for how to acquire these login tokens for each supported
+(Tier 1 and above) service.
+
+.. Note::
+    In the future, Unichat will offer a uniform interface to programatically
+    authenticate through, making this process unnecessary.
+
 GroupMe Instructions
 ------------------------------
 1. Log into ``dev.groupme.com``:
