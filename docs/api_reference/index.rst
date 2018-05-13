@@ -14,18 +14,42 @@ Terminology
 * Service: A messaging API we might want to interact with
 * Conversation: Any series of messages between two or more participants
 
+
 Services
 ==============================
 
-========= =============== =========
-Service   Status          Notes
---------- --------------- ---------
-GroupMe   Full Support
-Slack     Full Support    May also add support for reading from file archives.
-Discord   Support planned Similar API to slack, shouldn't take long.
-========= =============== =========
+There are currently 3 tiers of support for various services:
 
-:: _endpoints:
+======= ===========
+Tier 0  No functionality, but planned for the future.
+Tier 1  Can read messages, conversations, and users.
+Tier 2  Can read attachments, edits, or threaded conversations.
+======= ===========
+
+========= ======== =========
+Service   Status   Notes
+--------- -------- ---------
+GroupMe   Tier 1
+Slack     Tier 1   May also add support for reading from file archives.
+Discord   Tier 0   Similar API to slack, shouldn't take long.
+========= ======== =========
+
+
+General Information
+==============================
+
+Here is some general information that applies to the API:
+
+* **IDs**: IDs are always alphanumeric strings. Assumptions should not be made
+  about the ID size - currently all IDs are fewer than 20 characters, but this
+  may change in the future.
+* **Tokens**: Authentication tokens are required for every request. For an
+  authentication tutorial, see :ref:`authentication`. Every token is an
+  alphanummeric string.
+* **Page**: This alphanumeric string should be passed in to iterate through
+  pages of content. For more information on how Unichat handles pagination, see
+  :ref:`pagination`.
+
 
 Endpoints
 ==============================
@@ -35,6 +59,10 @@ Conversations List
 ::
 
 	GET /:service/conversations
+
+Returns a paginated list of conversations. May return up to 1,000 conversations,
+but can return less. An empty conversations list indicates there are no more
+conversations to retrieve.
 
 Required parameters:
 

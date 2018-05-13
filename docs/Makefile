@@ -21,4 +21,4 @@ help:
 	pipenv run @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 livehtml:
-	pipenv run sphinx-autobuild -b html $(EXTRAOPTS) $(BUILDDIR)/html
+	pipenv run sphinx-autobuild -b html $(EXTRAOPTS) $(BUILDDIR)/html --port 8080

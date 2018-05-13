@@ -1,6 +1,9 @@
 import json
+import logging.config
+import os
 import sys
 import urllib.request
+import yaml
 
 
 def print_err(*args, **kwargs):
@@ -8,8 +11,7 @@ def print_err(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def make_request(base_url, additional_url, token, params={},
-                 strip_envelope=True):
+def make_request(base_url, additional_url, token, params={}):
     """Fetches resource at URL, converts JSON response to object."""
 
     # Note: This function may require modification to be more generally useful.
@@ -24,11 +26,7 @@ def make_request(base_url, additional_url, token, params={},
 
     # Convert raw response to usable JSON object
     response_as_string = response.read().decode('utf-8')
-    obj = json.loads(response_as_string)
-    if strip_envelope:
-        return obj["response"]
-    else:
-        return obj
+    return json.loads(response_as_string)
 
 
 class TokenStore(object):
@@ -53,3 +51,9 @@ class TokenStore(object):
 
     def set_data(self, token, data):
         self._store[token] = data
+
+
+def setup_logging():
+    logging.basicConfig(format='[%(asctime)s.%(msecs)d] [%(levelname)-8s] [%(filename)-10s:%(lineno)d] %(message)s',
+                        datefmt='%d-%m-%Y %H:%M:%S',
+                        level=logging.DEBUG)

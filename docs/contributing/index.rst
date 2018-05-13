@@ -32,7 +32,7 @@ Testing
 ==============================
 
 .. Note::
-    Currently `make test` only runs a very basic test to see if the server
+    Currently ``make test`` only runs a very basic test to see if the server
     returns an HTTP error for a valid request, with no other checks of any kind.
 
 .. Warning::
@@ -59,5 +59,7 @@ Or, for more verbose output (such as the JSON returned from each request)::
 How to give feedback
 ==============================
 
-    
+Find a bug? Have an enhancement idea? Open a GitHub issue `here.
+<https://github.com/TheGuyWithTheFace/Uniform-Chat-API/issues>`_ Any and all
+feedback is welcome!
 

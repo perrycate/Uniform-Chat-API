@@ -2,8 +2,10 @@
 Translates incoming requests into proper queries against GroupMe's public API.
 """
 import json
+import logging
 
-from unichat.errors import AuthenticationError, ServiceError
+from unichat.errors import AuthenticationError, ServiceError, NotFoundError, \
+                                UnauthorizedError
 from unichat.models import User, Conversation, ConversationCollection, \
                                 Message, MessageCollection
 from unichat.util import make_request, TokenStore
@@ -30,7 +32,8 @@ class Slack(Translator):
                                                  'cursor': page})
             # Add users retrieved
             if 'members' not in users_list_raw:
-                raise ServiceError
+                raise ServiceError('Missing \'members\' field: '
+                                   '{}'.format(users_list_raw))
             user_ids += users_list_raw['members']
 
             # Keep going as long as there are more users to retrieve
@@ -43,7 +46,7 @@ class Slack(Translator):
         users_in_chat = []
         for uid in user_ids:
             if uid not in all_users:
-                raise ServiceError
+                raise ServiceError('Unknown UID {}'.format(uid))
             users_in_chat.append(all_users[uid])
 
         return users_in_chat
@@ -60,7 +63,8 @@ class Slack(Translator):
                                       {'cursor': page})
             # Add conversations retrieved
             if 'channels' not in data:
-                raise ServiceError
+                raise ServiceError('Missing \'channels\' field: '
+                                   '{}'.format(data))
             for channel in data['channels']:
                 channels.append(Conversation(cid=channel['id'],
                                              name=channel['name'],
@@ -90,21 +94,22 @@ class Slack(Translator):
         data = self._make_request('/conversations.history', auth,
                                   {'channel': conversation_id, 'cursor': page})
         if ('messages' not in data):
-            raise ServiceError
+            raise ServiceError('Missing \'messages\' field: {}'.format(data))
 
         # populate array of message objects
         messages = []
         users = self._fetch_users_info(auth)
         for index in range(len(data['messages'])):
             message = data['messages'][index]
-            
+
             # Unsupported event
             # FIXME: some important events are not captured this way
             # (e.g., message_changed, message_replied)
             # https://api.slack.com/events/message
             if not 'user' in message:
+                logging.warn('Message did not have \'user\' field')
                 continue
-            
+
             message_id = self._create_message_id(conversation_id, page, index)
             user_id = message['user']
             user = users[user_id]
@@ -117,7 +122,8 @@ class Slack(Translator):
         # Check for pagination token
         if 'has_more' in data and data['has_more']:
             if 'next_cursor' not in data['response_metadata']:
-                raise ServiceError
+                raise ServiceError('Missing \'next_cursor\' field:'
+                                   '{}'.format(data['response_metadata']))
             cursor = data['response_metadata']['next_cursor']
         else:
             cursor = Slack.PAGING_DONE_TOKEN
@@ -126,16 +132,24 @@ class Slack(Translator):
 
     def _make_request(self, endpoint, auth, params={}):
         # Convenience method to reduce the number of arguments passed around
-        data = make_request(Slack.URL_BASE, endpoint, auth, params, False)
+        data = make_request(Slack.URL_BASE, endpoint, auth, params)
 
         # Check for errors
         if data['ok'] != True:
             if 'error' in data:
-                if data['error'] == 'not_authed':
-                    raise AuthenticationError
-                if data['error'] == 'missing_scope':
-                    raise AuthenticationError
-            raise ServiceError
+                error = data['error']
+                if error == 'not_authed' or error == 'invalid_auth':
+                    raise AuthenticationError(error)
+                elif error == 'missing_scope' or error == 'no_permission':
+                    raise UnauthorizedError(error)
+                elif error == 'channel_not_found':
+                    raise NotFoundError(error)
+                else:
+                    raise ServiceError('Error returned from slack api: '
+                                       '{}'.format( data['error']))
+            else:
+                raise ServiceError('Unknown error from slack api. '
+                                   'Full response: {}'.format(data))
 
         return data
 
@@ -154,7 +168,8 @@ class Slack(Translator):
             data = self._make_request('/users.list', token,
                                       {'limit': 1000, 'cursor': page})
             if 'members' not in data:
-                raise ServiceError
+                raise ServiceError('Missing \'members\' field:'
+                                   '{}'.format(data))
             for user_raw in data['members']:
                 uid = user_raw['id']
                 users[uid] = User(uid=uid, name=user_raw['name'])
