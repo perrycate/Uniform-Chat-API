@@ -41,15 +41,15 @@ class TokenStore(object):
     def __init__(self):
         self._store = {}
 
-    def has_data(self, token):
+    def has(self, token):
         return token in self._store
 
-    def get_data(self, token):
+    def get(self, token):
         if not self.has_data(token):
             return None
         return self._store[token]
 
-    def set_data(self, token, data):
+    def set(self, token, data):
         self._store[token] = data
 
 

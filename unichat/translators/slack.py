@@ -158,8 +158,8 @@ class Slack(Translator):
         """Get users in the slack associated with this token."""
 
         # Check for cached result
-        if self._token_store.has_data(token):
-            return self._token_store.get_data(token)
+        if self._token_store.has(token):
+            return self._token_store.get(token)
 
         # request users list, iterating over pages
         pages_remaining = True
@@ -182,7 +182,7 @@ class Slack(Translator):
                 pages_remaining = False
 
         # Cache users for next time
-        self._token_store.set_data(token, users)
+        self._token_store.set(token, users)
 
         # It's cached now and I don't want to repeat myself
         return self._fetch_users_info(token)
