@@ -22,7 +22,7 @@ class Slack(Translator):
         self._token_store = TokenStore()
 
     def get_users(self, conversation_id, auth=''):
-        # Get list of users in this chat (this only gives us IDs though)
+        """Get list of IDs of users in this chat."""
         user_ids = []
         page = ''
         pages_remain = True
@@ -131,7 +131,8 @@ class Slack(Translator):
         return MessageCollection(messages, next_page=cursor)
 
     def _make_request(self, endpoint, auth, params={}):
-        # Convenience method to reduce the number of arguments passed around
+        """Convenience method to simplify request calls."""
+
         data = make_request(Slack.URL_BASE, endpoint, auth, params)
 
         # Check for errors
@@ -154,7 +155,7 @@ class Slack(Translator):
         return data
 
     def _fetch_users_info(self, token):
-        # Get users in the slack associated with this token, if we haven't yet.
+        """Get users in the slack associated with this token."""
 
         # Check for cached result
         if self._token_store.has_data(token):
