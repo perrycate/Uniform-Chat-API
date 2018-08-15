@@ -21,6 +21,7 @@ class Facebook(Translator):
     def __init__(self):
         # Contains fb client instances for each user
         self._clients = TokenStore()
+        self._users = TokenStore()
 
     def get_users(self, conversation_id, auth=''):
         # TODO
@@ -45,19 +46,32 @@ class Facebook(Translator):
                                             t.last_message_timestamp),
                      client.fetchThreadList())
 
-        return ConversationCollection(convos, '')  # TODO paging
+        return ConversationCollection(list(convos), '')  # TODO paging
 
+    # TODO verify works
     def get_conversation(self, conversation_id, auth=''):
-        # TODO
+        client = self._get_client(auth)
+        thread = client.fetchThreadInfo(conversation_id)
 
-        return Conversation(cid=data['channel']['id'],
-                            name=data['channel']['name'],
+        # TODO unify date format
+        return Conversation(cid=thread.uid,
+                            name=thread.name,
                             # is last_read good enough for last_updated?
-                            last_updated=data['channel']['last_read'])
+                            last_updated=thread.last_message_timestamp)
 
+    # TODO verify works
     def get_messages(self, conversation_id, auth='', page=''):
-        pass
-        # TODO
+        client = self._get_client(auth)
+        users = self._fetch_users_info(auth)
+        fbchat_message_list = client.fetchThreadMessages(conversation_id)
+
+        messages = map(lambda m: Message(mid=m.uid,
+                                         uid=m.author,
+                                         user_name=users[m.author].name,
+                                         text=m.text,
+                                         time=m.timestamp),
+                       fbchat_message_list)
+        return MessageCollection(list(messages), '')  # TODO paging
 
     def _get_client(self, auth):
         """
@@ -79,44 +93,33 @@ class Facebook(Translator):
         username = split[0]
         password = split[2]
 
-        client = fbchat.Client(username, password)
+        try:
+            client = fbchat.Client(username, password)
+        except FBChatUserError as e:
+            raise AuthenticationError(e)
+
         self._clients.set(auth, client)
         return client
 
 
     def _fetch_users_info(self, token):
         """Get users in fb associated with this token"""
-        # TODO
 
         # Check for cached result
-        if self._token_store.has(token):
-            return self._token_store.get(token)
+        if self._tokens.has(token):
+            return self._tokens.get(token)
 
         # request users list, iterating over pages
-        pages_remaining = True
-        page = ''
-        users = {}
-        while pages_remaining:
-            data = self._make_request('/users.list', token,
-                                      {'limit': 1000, 'cursor': page})
-            if 'members' not in data:
-                raise ServiceError('Missing \'members\' field:'
-                                   '{}'.format(data))
-            for user_raw in data['members']:
-                uid = user_raw['id']
-                users[uid] = User(uid=uid, name=user_raw['name'])
-
-            # Handle paging
-            if self._has_pages_remaining(data):
-                page = data['response_metadata']['next_cursor']
-            else:
-                pages_remaining = False
+        client = self._get_client(token)
+        fbchat_users = client.fetchAllUsers()
+        users_dict = {}
+        for user in fbchat_users:  # TODO this can definitely be a 1-liner
+            users_dict[user.uid] = user
 
         # Cache users for next time
-        self._token_store.set(token, users)
+        self._tokens.set(token, users_dict)
 
-        # It's cached now and I don't want to repeat myself
-        return self._fetch_users_info(token)
+        return users_dict
 
     def _has_pages_remaining(self, data):
         # TODO even necessary?
