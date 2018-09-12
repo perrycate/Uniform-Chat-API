@@ -17,6 +17,8 @@ class Facebook(Translator):
 
     SERVICE = 'Facebook' # For identification in errors, etc.
     PAGING_DONE_TOKEN = 'done'
+    GROUP_INDICATOR = 'GROUP'
+    USER_INDICATOR = 'USER'
 
     def __init__(self):
         # Contains fb client instances for each user
@@ -24,8 +26,21 @@ class Facebook(Translator):
         self._users = TokenStore()
 
     def get_users(self, conversation_id, auth=''):
-        # TODO
-        user_ids = None # TODO
+
+        client = self._clients.get(auth)
+        thread = client.fetchThreadInfo(conversation_id)
+
+        if thread.type == GROUP_INDICATOR:
+            users_in_chat = thread.participants
+        elif thread.type == USER_INDICATOR:
+            if thread.nickname is not None:
+                other_user_name = thread.nickname
+            else:
+                other_user_name = '{} {}'.format(thread.first_name,
+                                            thread.last_name)
+            all_users = 
+            # TODO show nicknames or real names?
+            # Need to look at what format nicknames are in 
 
         # Associate names etc with user ids
         all_users = self._fetch_users_info(auth)
@@ -112,9 +127,12 @@ class Facebook(Translator):
         # request users list, iterating over pages
         client = self._get_client(token)
         fbchat_users = client.fetchAllUsers()
-        users_dict = {}
-        for user in fbchat_users:  # TODO this can definitely be a 1-liner
-            users_dict[user.uid] = user
+        users_dict = {user.uid:user for user in fbchat_users}
+
+        # May need to fetch info about ourselves manually
+        if client.uid not in users_dict:
+            me_irl = client.fetchUserInfo(client.uid)[client.uid]
+            users_dict[client.uid] = me_irl
 
         # Cache users for next time
         self._tokens.set(token, users_dict)
